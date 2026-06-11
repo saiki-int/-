@@ -22,30 +22,34 @@ const C = {
   red: '#ef4444', ora: '#f97316', yel: '#facc15', grn: '#22c55e',
 };
 
-const CFG = {
+// CFGはContextで管理（設定画面と共有）
+const DEFAULT_CFG = {
   neglect: { w: 4, d: 8 },
   deadline: { w: 3, d: 2 },
   overload: { maxT: 5, maxD: 2, rate: 40 },
 };
 
 // ── 危険度判定エンジン ──────────────────────────────────────────
-function assess(task, overloadedUids) {
+function assess(task, overloadedUids, cfg) {
   if (isSnoozed(task))
     return { ...task, risk: 'healthy', reasons: [], score: 0, snoozed: true };
+  // ★ 完了済み課題は判定対象外
+  if (task.status === 'closed')
+    return { ...task, risk: 'healthy', reasons: [], score: 0, snoozed: false };
   const stale = daysDiff(task.upd);
   const dtd = task.due ? -daysDiff(task.due) : null;
   const rs = []; let score = 0;
 
-  if (stale >= CFG.neglect.d)                                           { rs.push('stale');    score += 40 + stale; }
-  if (task.due && dtd < 0)                                              { rs.push('overdue');  score += 50 + Math.abs(dtd) * 5; }
-  if (!task.uid)                                                        { rs.push('unassigned'); score += 45; }
-  if (task.pri === 'high' && dtd !== null && dtd >= 0 && dtd <= CFG.deadline.d) { rs.push('highNear'); score += 60; }
-  if (task.uid && overloadedUids.has(task.uid))                         { rs.push('workload'); score += 30; }
+  if (stale >= cfg.neglect.d)                                            { rs.push('stale');    score += 40 + stale; }
+  if (task.due && dtd < 0)                                               { rs.push('overdue');  score += 50 + Math.abs(dtd) * 5; }
+  if (!task.uid)                                                         { rs.push('unassigned'); score += 45; }
+  if (task.pri === 'high' && dtd !== null && dtd >= 0 && dtd <= cfg.deadline.d) { rs.push('highNear'); score += 60; }
+  if (task.uid && overloadedUids.has(task.uid))                          { rs.push('workload'); score += 30; }
 
   const dSet = new Set(['stale', 'overdue', 'unassigned', 'highNear', 'workload']);
   if (!rs.some((r) => dSet.has(r))) {
-    if (stale >= CFG.neglect.w && stale < CFG.neglect.d) { rs.push('staleWarn'); score += 20; }
-    if (dtd !== null && dtd >= 0 && dtd <= CFG.deadline.w) { rs.push('nearDL'); score += 25; }
+    if (stale >= cfg.neglect.w && stale < cfg.neglect.d) { rs.push('staleWarn'); score += 20; }
+    if (dtd !== null && dtd >= 0 && dtd <= cfg.deadline.w) { rs.push('nearDL'); score += 25; }
   }
   const risk = rs.some((r) => dSet.has(r)) ? 'danger' : rs.length > 0 ? 'warning' : 'healthy';
   return { ...task, risk, reasons: rs, score, snoozed: false };
@@ -57,7 +61,7 @@ const REASON_LABELS = {
   staleWarn: '4〜7日更新なし', nearDL: '期限まで3日以内',
 };
 
-function assessAll(tasks) {
+function assessAll(tasks, cfg = DEFAULT_CFG) {
   const mmap = new Map();
   for (const t of tasks) {
     if (!t.uid) continue;
@@ -68,20 +72,22 @@ function assessAll(tasks) {
   const overloaded = new Set();
   for (const [id, e] of mmap) {
     const rate = e.total > 0 ? (e.danger / e.total) * 100 : 0;
-    if (e.total >= CFG.overload.maxT || e.danger >= CFG.overload.maxD || rate >= CFG.overload.rate)
+    if (e.total >= cfg.overload.maxT || e.danger >= cfg.overload.maxD || rate >= cfg.overload.rate)
       overloaded.add(id);
   }
-  return tasks.map((t) => assess(t, overloaded)).sort((a, b) => b.score - a.score);
+  return tasks.map((t) => assess(t, overloaded, cfg)).sort((a, b) => b.score - a.score);
 }
 
-// ── ユーザー一覧（固定）─────────────────────────────────────────
-const USERS = [
+// ── ユーザー一覧（Supabaseから取得、フォールバック用固定値）──────
+const FALLBACK_USERS = [
   { id: 'u1', name: '山田 太郎', dept: '営業部' },
   { id: 'u2', name: '鈴木 花子', dept: '企画部' },
   { id: 'u3', name: '田中 健一', dept: '開発部' },
   { id: 'u4', name: '佐藤 美咲', dept: 'マーケ部' },
   { id: 'u5', name: '高橋 誠', dept: '営業部' },
 ];
+// グローバルで参照できるよう変数として保持（Contextから更新される）
+let USERS = [...FALLBACK_USERS];
 const findUser = (id) => USERS.find((x) => x.id === id) ?? null;
 
 // ── グローバルState ─────────────────────────────────────────────
@@ -90,14 +96,52 @@ const Ctx = createContext(null);
 function AppProvider({ children }) {
   const [tasks, setTasks]       = useState([]);
   const [projects, setProjects] = useState([]);
+  const [users, setUsers]       = useState(FALLBACK_USERS);
   const [loading, setLoading]   = useState(true);
+  // ★ 設定値をグローバルで管理 — 設定画面で変更するとダッシュボードに即反映
+  const [cfg, setCfg] = useState(DEFAULT_CFG);
 
   useEffect(() => { init(); }, []);
 
   const init = async () => {
     setLoading(true);
-    await Promise.all([loadTasks(), loadProjects()]);
+    await Promise.all([loadTasks(), loadProjects(), loadUsers(), loadConfig()]);
     setLoading(false);
+  };
+
+  // 設定をSupabaseから読み込む
+  const loadConfig = async () => {
+    const { data, error } = await supabase.from('rule_config').select('*').eq('id', 'default').single();
+    if (error || !data) return;
+    setCfg({
+      neglect:  { w: data.neglect_warning_days,  d: data.neglect_danger_days  },
+      deadline: { w: data.deadline_warning_days, d: data.deadline_danger_days },
+      overload: { maxT: data.overload_max_total, maxD: data.overload_max_danger, rate: data.overload_danger_rate },
+    });
+  };
+
+  // 設定をSupabaseに保存する
+  const saveConfig = async (c) => {
+    await supabase.from('rule_config').update({
+      neglect_warning_days:  c.neglect.w,
+      neglect_danger_days:   c.neglect.d,
+      deadline_warning_days: c.deadline.w,
+      deadline_danger_days:  c.deadline.d,
+      overload_max_total:    c.overload.maxT,
+      overload_max_danger:   c.overload.maxD,
+      overload_danger_rate:  c.overload.rate,
+      updated_at: new Date(),
+    }).eq('id', 'default');
+  };
+
+  const loadUsers = async () => {
+    const { data, error } = await supabase.from('users').select('*');
+    if (error) { console.error('loadUsers error:', error); return; }
+    if (data && data.length > 0) {
+      const mapped = data.map(u => ({ id: u.id, name: u.name, dept: u.department ?? '' }));
+      setUsers(mapped);
+      USERS = mapped; // グローバル参照も更新
+    }
   };
 
   // ── タスク読み込み ──────────────────────────────────────────
@@ -112,6 +156,7 @@ function AppProvider({ children }) {
       title: t.title,
       pid: t.project_id,
       uid: t.user_id,
+      approverId: t.approver_id ?? null,
       status: t.status,
       pri: t.priority,
       type: t.type,
@@ -119,6 +164,7 @@ function AppProvider({ children }) {
       upd: t.last_activity_at ? new Date(t.last_activity_at) : new Date(),
       snooze: t.snoozed_until ? new Date(t.snoozed_until) : undefined,
       snoozeR: t.snooze_reason,
+      milestone: t.milestone ?? '',
       risk: 'healthy', reasons: [],
       projectName: t.projects?.name ?? '',
       userName: t.users?.name ?? null,
@@ -157,10 +203,12 @@ function AppProvider({ children }) {
       title: f.title.trim(),
       project_id: f.pid,
       user_id: f.uid || null,
+      approver_id: f.approverId || null,
       status: f.status,
       priority: f.pri,
       type: f.type,
       due_date: f.due || null,
+      milestone: f.milestone || null,
       last_activity_at: f.upd ? new Date(f.upd) : new Date(),
     });
     if (error) { console.error('addTask error:', error); return; }
@@ -169,14 +217,16 @@ function AppProvider({ children }) {
 
   const updateTask = useCallback(async (id, f) => {
     const patch = {};
-    if (f.title !== undefined)  patch.title          = f.title.trim();
-    if (f.pid   !== undefined)  patch.project_id     = f.pid;
-    if (f.uid   !== undefined)  patch.user_id        = f.uid || null;
-    if (f.status !== undefined) patch.status         = f.status;
-    if (f.pri   !== undefined)  patch.priority       = f.pri;
-    if (f.type  !== undefined)  patch.type           = f.type;
-    if (f.due   !== undefined)  patch.due_date       = f.due || null;
-    if (f.upd   !== undefined)  patch.last_activity_at = f.upd ? new Date(f.upd) : new Date();
+    if (f.title      !== undefined) patch.title             = f.title.trim();
+    if (f.pid        !== undefined) patch.project_id        = f.pid;
+    if (f.uid        !== undefined) patch.user_id           = f.uid || null;
+    if (f.approverId !== undefined) patch.approver_id       = f.approverId || null;
+    if (f.status     !== undefined) patch.status            = f.status;
+    if (f.pri        !== undefined) patch.priority          = f.pri;
+    if (f.type       !== undefined) patch.type              = f.type;
+    if (f.due        !== undefined) patch.due_date          = f.due || null;
+    if (f.upd        !== undefined) patch.last_activity_at  = f.upd ? new Date(f.upd) : new Date();
+    if (f.milestone  !== undefined) patch.milestone         = f.milestone || null;
     patch.updated_at = new Date();
     const { error } = await supabase.from('tasks').update(patch).eq('id', id);
     if (error) { console.error('updateTask error:', error); return; }
@@ -255,10 +305,11 @@ function AppProvider({ children }) {
     await loadProjects();
   }, []);
 
-  const assessed = useMemo(() => assessAll(tasks), [tasks]);
+  const assessed = useMemo(() => assessAll(tasks, cfg), [tasks, cfg]);
 
   const value = {
-    tasks, projects, assessed, loading,
+    tasks, projects, users, assessed, loading,
+    cfg, setCfg, saveConfig,
     addTask, updateTask, deleteTask, setStatus, setAssignee, setPriority, snoozeTask,
     addProject, updateProject, archiveProject, deleteProject,
     loadTasks, loadProjects,
@@ -351,7 +402,7 @@ function Nav({ page, setPage }) {
 // ダッシュボード画面
 // ================================================================
 function Dashboard({ setPage }) {
-  const { assessed, projects, snoozeTask } = useApp();
+  const { assessed, projects, snoozeTask, cfg } = useApp();
   const [selPid, setSelPid] = useState('all');
   const [snoozeMenu, setSnoozeMenu] = useState(null);
   const [toast, setToast] = useState(null);
@@ -366,7 +417,7 @@ function Dashboard({ setPage }) {
   const active = filtered.filter((a) => !a.snoozed);
   const kpi = {
     danger:    active.filter((a) => a.risk === 'danger').length,
-    neglected: active.filter((a) => daysDiff(a.upd) >= 7).length,
+    neglected: active.filter((a) => daysDiff(a.upd) >= cfg.neglect.d).length, // ★ 設定値を使用
     overdue:   active.filter((a) => a.due && daysDiff(a.due) > 0).length,
     snoozed:   filtered.filter((a) => a.snoozed).length,
   };
@@ -382,7 +433,11 @@ function Dashboard({ setPage }) {
     if (a.due && daysDiff(a.due) > 0) e.overdue++;
   }
   const members = Array.from(mmap.values())
-    .map((e) => ({ ...e, status: e.danger >= 2 || e.overdue >= 2 ? 'overloaded' : e.danger >= 1 || e.overdue >= 1 ? 'warning' : 'healthy' }))
+    .map((e) => {
+      const rate = e.total > 0 ? (e.danger / e.total) * 100 : 0;
+      const isOverloaded = e.total >= cfg.overload.maxT || e.danger >= cfg.overload.maxD || rate >= cfg.overload.rate;
+      return { ...e, status: isOverloaded ? 'overloaded' : e.danger >= 1 || e.overdue >= 1 ? 'warning' : 'healthy' };
+    })
     .sort((a, b) => b.danger - a.danger);
   const overloaded = members.filter((m) => m.status === 'overloaded').length;
 
@@ -400,7 +455,8 @@ function Dashboard({ setPage }) {
   const projHealth = activeProjects.map((pr) => {
     const e = projMap.get(pr.id) || { danger: 0, overdue: 0, stale: 0, unassign: 0, total: 0, topTask: null };
     const score = Math.max(0, 100 - e.danger * 15 - e.overdue * 20 - e.stale * 10 - e.unassign * 10);
-    return { ...pr, score, status: score >= 80 ? 'healthy' : score >= 50 ? 'warning' : 'danger', ...e };
+    return { ...pr, score, status: score >= 80 ? 'healthy' : score >= 50 ? 'warning' : 'danger',
+      dangerCount: e.danger, overdueCount: e.overdue, staleCount: e.stale, ...e };
   }).filter((x) => x.total > 0).sort((a, b) => a.score - b.score);
 
   const dangers = active.filter((a) => a.risk === 'danger');
@@ -488,6 +544,35 @@ function Dashboard({ setPage }) {
         </div>
       </div>
 
+      {/* 今日の推奨アクション */}
+      {(() => {
+        const actions = [];
+        const dangers = active.filter((a) => a.risk === 'danger');
+        const top = dangers[0];
+        if (top) actions.push({ num: 1, title: `「${top.title}」の進捗を確認`, detail: top.reasons.map(r => REASON_LABELS[r]).join('・') + 'が発生しています。今日中に担当者に確認してください。', color: C.red });
+        const overloadedM = members.find((m) => m.status === 'overloaded');
+        if (overloadedM) actions.push({ num: 2, title: `${overloadedM.user.name}さんの課題を再配分`, detail: `危険課題が${overloadedM.danger}件集中しています。他のメンバーへの振り直しを検討してください。`, color: C.ora });
+        const unassigned = active.find((a) => a.reasons.includes('unassigned'));
+        if (unassigned) actions.push({ num: 3, title: `「${unassigned.title}」に担当者を設定`, detail: '担当者が未設定のまま放置されています。すぐに割り当ててください。', color: '#a78bfa' });
+        if (actions.length === 0) return null;
+        return (
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>📌 今日の推奨アクション</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {actions.map((a) => (
+                <div key={a.num} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: 'rgba(30,41,59,.5)', border: `1px solid rgba(51,65,85,.5)` }}>
+                  <span style={{ width: 22, height: 22, borderRadius: '50%', background: a.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>{a.num}</span>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: C.txt, margin: 0 }}>{a.title}</p>
+                    <p style={{ fontSize: 11, color: C.mut, margin: '2px 0 0', lineHeight: 1.5 }}>{a.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* 2カラム */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 14 }}>
         {/* 危険課題ランキング */}
@@ -549,7 +634,7 @@ function Dashboard({ setPage }) {
 
         {/* 右カラム */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {selPid === 'all' && (
+          {selPid === 'all' ? (
             <div>
               <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>プロジェクト健康度</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -572,7 +657,34 @@ function Dashboard({ setPage }) {
                 })}
               </div>
             </div>
-          )}
+          ) : (() => {
+            // 特定プロジェクト選択時：そのプロジェクト単体の健康度を表示
+            const ph = projHealth.find(p => p.id === selPid);
+            if (!ph) return null;
+            const st = RSTATUS[ph.status];
+            return (
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>プロジェクト健康度</p>
+                <div style={{ borderRadius: 10, border: `1px solid ${st.bd}`, background: st.bg, padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <div style={{ width: 3, height: 32, borderRadius: 999, background: ph.color, flexShrink: 0 }} />
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: C.txt, margin: 0 }}>{ph.name}</p>
+                      <p style={{ fontSize: 9, color: C.mut, margin: 0 }}>{ph.total}件の課題</p>
+                    </div>
+                    <span style={{ fontSize: 20, fontWeight: 700, color: st.bar }}>{ph.score}<span style={{ fontSize: 10, color: C.mut }}>点</span></span>
+                  </div>
+                  <Bar pct={ph.score} color={st.bar} h={4} />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 7, flexWrap: 'wrap' }}>
+                    {ph.dangerCount > 0  && <span style={{ fontSize: 10, color: C.red,    background: `${C.red}15`,    padding: '2px 8px', borderRadius: 4 }}>危険 {ph.dangerCount}件</span>}
+                    {ph.overdueCount > 0 && <span style={{ fontSize: 10, color: C.ora,    background: `${C.ora}15`,    padding: '2px 8px', borderRadius: 4 }}>超過 {ph.overdueCount}件</span>}
+                    {ph.staleCount > 0   && <span style={{ fontSize: 10, color: C.yel,    background: `${C.yel}15`,    padding: '2px 8px', borderRadius: 4 }}>放置 {ph.staleCount}件</span>}
+                  </div>
+                  <p style={{ fontSize: 10, fontWeight: 600, color: st.bar, marginTop: 6 }}>{st.l}</p>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* メンバー負荷 */}
           <div>
@@ -599,6 +711,37 @@ function Dashboard({ setPage }) {
         </div>
       </div>
 
+      {/* 遅延原因の内訳 */}
+      {(() => {
+        const counts = {};
+        for (const a of active) {
+          if (a.risk === 'healthy') continue;
+          for (const r of a.reasons) counts[r] = (counts[r] ?? 0) + 1;
+        }
+        const stats = Object.entries(counts).map(([r, n]) => ({ r, n, l: REASON_LABELS[r] ?? r })).sort((a, b) => b.n - a.n);
+        if (stats.length === 0) return null;
+        const max = Math.max(...stats.map(s => s.n), 1);
+        const RCOLORS = { stale: C.yel, overdue: C.red, unassigned: C.ora, highNear: '#f87171', workload: '#a78bfa', staleWarn: '#fbbf24', nearDL: '#fde68a' };
+        return (
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>遅延原因の内訳</p>
+            <div style={{ borderRadius: 12, border: `1px solid ${C.bdr}`, background: C.sur, padding: 14 }}>
+              {stats.map(s => (
+                <div key={s.r} style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
+                    <span style={{ color: '#cbd5e1' }}>{s.l}</span>
+                    <span style={{ fontWeight: 700, color: RCOLORS[s.r] ?? C.txt }}>{s.n}件</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 999, background: 'rgba(51,65,85,.5)', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 999, background: RCOLORS[s.r] ?? C.mut, width: `${Math.round((s.n / max) * 100)}%`, transition: 'width .4s' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
@@ -614,7 +757,7 @@ const PRI_C = { high: '#f87171', medium: '#fbbf24', low: '#64748b' };
 const TYPE_L = { task: 'タスク', bug: 'バグ', request: '要望' };
 
 function TasksPage() {
-  const { assessed, projects, addTask, updateTask, deleteTask, setStatus, setAssignee, setPriority, snoozeTask } = useApp();
+  const { assessed, projects, users, addTask, updateTask, deleteTask, setStatus, setAssignee, setPriority, snoozeTask } = useApp();
   const [modal, setModal]     = useState(null);
   const [delTarget, setDel]   = useState(null);
   const [toast, setToast]     = useState(null);
@@ -692,7 +835,7 @@ function TasksPage() {
               <tr><td colSpan={8} style={{ padding: '36px 0', textAlign: 'center', fontSize: 13, color: C.mut }}>課題が見つかりません。フィルターを変更するか「➕ 課題を追加」してください。</td></tr>
             )}
             {items.map((a) => (
-              <TaskRow key={a.id} a={a} projects={activeProjects}
+              <TaskRow key={a.id} a={a} projects={activeProjects} users={users}
                 onEdit={() => setModal(a)}
                 onDelete={() => setDel(a)}
                 onStatus={(s) => { setStatus(a.id, s); showToast('ステータスを変更しました'); }}
@@ -706,7 +849,7 @@ function TasksPage() {
       </div>
 
       {modal && (
-        <TaskModal task={modal === 'create' ? null : modal} projects={activeProjects}
+        <TaskModal task={modal === 'create' ? null : modal} projects={activeProjects} users={users}
           onSave={(data) => {
             if (modal === 'create') { addTask(data); showToast('課題を作成しました。ダッシュボードに反映されました'); }
             else { updateTask(modal.id, data); showToast('課題を更新しました'); }
@@ -725,7 +868,7 @@ function TasksPage() {
   );
 }
 
-function TaskRow({ a, projects, onEdit, onDelete, onStatus, onAssignee, onPriority, onSnooze }) {
+function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, onPriority, onSnooze }) {
   const [hov, setHov] = useState(false);
   const [snoozeOpen, setSnoozeOpen] = useState(false);
   const proj  = projects.find((x) => x.id === a.pid);
@@ -745,7 +888,11 @@ function TaskRow({ a, projects, onEdit, onDelete, onStatus, onAssignee, onPriori
           <div style={{ width: 7, height: 7, borderRadius: '50%', background: proj?.color ?? '#64748b', flexShrink: 0, marginTop: 5 }} />
           <div style={{ minWidth: 0 }}>
             <p style={{ fontSize: 12, fontWeight: 500, color: C.txt, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</p>
-            <p style={{ fontSize: 9, color: C.mut, margin: '2px 0 0' }}>{proj?.name} · {TYPE_L[a.type]}</p>
+            <p style={{ fontSize: 9, color: C.mut, margin: '2px 0 0' }}>
+              {proj?.name} · {TYPE_L[a.type]}
+              {a.approverId && <span style={{ marginLeft: 4 }}>· 承認: {findUser(a.approverId)?.name ?? '—'}</span>}
+              {a.milestone  && <span style={{ marginLeft: 4 }}>· 🏁 {a.milestone}</span>}
+            </p>
             {!a.snoozed && a.reasons.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
                 {a.reasons.map((r) => <span key={r} style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: a.risk === 'danger' ? 'rgba(239,68,68,.15)' : 'rgba(234,179,8,.15)', color: a.risk === 'danger' ? '#fca5a5' : '#fde68a', border: `1px solid ${a.risk === 'danger' ? 'rgba(239,68,68,.3)' : 'rgba(234,179,8,.3)'}` }}>⚠ {REASON_LABELS[r]}</span>)}
@@ -771,7 +918,7 @@ function TaskRow({ a, projects, onEdit, onDelete, onStatus, onAssignee, onPriori
         <select value={a.uid ?? ''} onChange={(e) => { e.stopPropagation(); onAssignee(e.target.value || null); }} onClick={(e) => e.stopPropagation()}
           style={{ background: 'rgba(15,23,42,.8)', border: '1px solid rgba(51,65,85,.5)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: a.uid ? C.txt : '#f87171', cursor: 'pointer', outline: 'none' }}>
           <option value="">未設定</option>
-          {USERS.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+          {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
         </select>
       </td>
       <td style={{ padding: '10px 8px', fontSize: 11, whiteSpace: 'nowrap', color: dueOver ? C.red : C.mut, fontWeight: dueOver ? 600 : 400 }}>{dueD}</td>
@@ -801,16 +948,18 @@ function TaskRow({ a, projects, onEdit, onDelete, onStatus, onAssignee, onPriori
   );
 }
 
-function TaskModal({ task, projects, onSave, onClose }) {
+function TaskModal({ task, projects, users, onSave, onClose }) {
   const [form, setForm] = useState({
-    title:  task?.title  ?? '',
-    pid:    task?.pid    ?? (projects[0]?.id ?? ''),
-    uid:    task?.uid    ?? '',
-    status: task?.status ?? 'open',
-    pri:    task?.pri    ?? 'medium',
-    type:   task?.type   ?? 'task',
-    due:    toDateStr(task?.due  ?? null),
-    upd:    toDateStr(task?.upd  ?? null),
+    title:     task?.title     ?? '',
+    pid:       task?.pid       ?? (projects[0]?.id ?? ''),
+    uid:       task?.uid       ?? '',
+    approverId: task?.approverId ?? '',
+    status:    task?.status    ?? 'open',
+    pri:       task?.pri       ?? 'medium',
+    type:      task?.type      ?? 'task',
+    due:       toDateStr(task?.due  ?? null),
+    upd:       toDateStr(task?.upd  ?? null),
+    milestone: task?.milestone ?? '',
   });
   const [err, setErr] = useState({});
 
@@ -869,8 +1018,29 @@ function TaskModal({ task, projects, onSave, onClose }) {
             <label style={{ fontSize: 11, fontWeight: 500, color: '#cbd5e1', display: 'block', marginBottom: 5 }}>担当者</label>
             <select value={form.uid ?? ''} onChange={(e) => setForm((f) => ({ ...f, uid: e.target.value }))} style={{ ...sStyle, color: form.uid ? C.txt : '#f87171' }}>
               <option value="">担当者未設定（危険判定の対象になります）</option>
-              {USERS.map((u) => <option key={u.id} value={u.id}>{u.name}（{u.dept}）</option>)}
+              {users.map((u) => <option key={u.id} value={u.id}>{u.name}（{u.dept}）</option>)}
             </select>
+          </div>
+
+          {/* 承認者 */}
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 500, color: '#cbd5e1', display: 'block', marginBottom: 5 }}>
+              承認者 <span style={{ color: C.mut, fontWeight: 400 }}>（任意）</span>
+            </label>
+            <select value={form.approverId ?? ''} onChange={(e) => setForm((f) => ({ ...f, approverId: e.target.value }))} style={sStyle}>
+              <option value="">承認者なし</option>
+              {users.map((u) => <option key={u.id} value={u.id}>{u.name}（{u.dept}）</option>)}
+            </select>
+          </div>
+
+          {/* マイルストーン */}
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 500, color: '#cbd5e1', display: 'block', marginBottom: 5 }}>
+              マイルストーン <span style={{ color: C.mut, fontWeight: 400 }}>（任意）</span>
+            </label>
+            <input value={form.milestone} maxLength={50} onChange={(e) => setForm((f) => ({ ...f, milestone: e.target.value }))}
+              placeholder="例：Q3リリース、Phase1完了"
+              style={iStyle} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
             {[
@@ -1097,12 +1267,13 @@ function ProjectsPage() {
 // 設定画面
 // ================================================================
 function SettingsPage() {
-  const { assessed } = useApp();
-  const [cfg, setCfg] = useState({ neglect: { w: 4, d: 8 }, deadline: { w: 3, d: 2 }, overload: { maxT: 5, maxD: 2, rate: 40 }, notif: { enabled: true, freq: 'daily' } });
-  const [saved, setSaved] = useState(cfg);
+  const { assessed, cfg, setCfg, saveConfig } = useApp(); // ★ グローバルcfgを使用
+  const [notif, setNotif] = useState({ enabled: true, freq: 'daily' });
+  const [saved, setSaved] = useState({ ...cfg, notif: { enabled: true, freq: 'daily' } });
   const [status, setStatus] = useState('idle');
   const [toast, setToast] = useState(null);
-  const hasChanges = JSON.stringify(cfg) !== JSON.stringify(saved);
+  const currentState = { ...cfg, notif };
+  const hasChanges = JSON.stringify(currentState) !== JSON.stringify(saved);
 
   const prev = useMemo(() => {
     const tasks = assessed.map((a) => a);
@@ -1215,9 +1386,9 @@ function SettingsPage() {
           <p style={{ fontSize: 11, color: C.mut, margin: '4px 0 0' }}>「何日更新がなければ危険?」などの判定ルールをチームに合わせて調整できます</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => { setCfg({ neglect: { w: 4, d: 8 }, deadline: { w: 3, d: 2 }, overload: { maxT: 5, maxD: 2, rate: 40 }, notif: { enabled: true, freq: 'daily' } }); setToast({ msg: '初期値に戻しました' }); }} disabled={!hasChanges}
+          <button onClick={() => { setCfg({ neglect: { w: 4, d: 8 }, deadline: { w: 3, d: 2 }, overload: { maxT: 5, maxD: 2, rate: 40 } }); setNotif({ enabled: true, freq: 'daily' }); setToast({ msg: '初期値に戻しました' }); }} disabled={!hasChanges}
             style={{ padding: '6px 13px', fontSize: 12, borderRadius: 9, border: '1px solid rgba(71,85,105,.6)', color: hasChanges ? '#94a3b8' : '#334155', background: 'transparent', cursor: hasChanges ? 'pointer' : 'not-allowed' }}>初期値に戻す</button>
-          <button onClick={async () => { setStatus('saving'); await new Promise((r) => setTimeout(r, 600)); setSaved(cfg); setStatus('saved'); setToast({ msg: '設定を保存しました' }); setTimeout(() => setStatus('idle'), 2500); }} disabled={!hasChanges || status === 'saving'}
+          <button onClick={async () => { setStatus('saving'); await saveConfig(cfg); await new Promise((r) => setTimeout(r, 300)); setSaved(currentState); setStatus('saved'); setToast({ msg: '設定を保存しました。ダッシュボードに反映されました。' }); setTimeout(() => setStatus('idle'), 2500); }} disabled={!hasChanges || status === 'saving'}
             style={{ padding: '6px 16px', fontSize: 12, fontWeight: 600, borderRadius: 9, border: 'none', cursor: hasChanges ? 'pointer' : 'not-allowed', background: status === 'saved' ? '#16a34a' : hasChanges ? '#4f46e5' : '#1e293b', color: (hasChanges || status === 'saved') ? '#fff' : '#334155' }}>
             {status === 'saving' ? '保存中…' : status === 'saved' ? '✓ 保存しました' : '設定を保存'}
           </button>
@@ -1258,18 +1429,18 @@ function SettingsPage() {
                 <p style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0', margin: 0 }}>通知を受け取る</p>
                 <p style={{ fontSize: 11, color: C.mut, margin: '2px 0 0' }}>危険課題が発生したとき自動でアラートを送ります</p>
               </div>
-              <div onClick={() => setCfg((c) => ({ ...c, notif: { ...c.notif, enabled: !c.notif.enabled } }))}
-                style={{ width: 42, height: 23, borderRadius: 999, background: cfg.notif.enabled ? '#4f46e5' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
-                <div style={{ position: 'absolute', top: 2.5, width: 17, height: 17, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.4)', left: cfg.notif.enabled ? 22 : 3, transition: 'left .2s' }} />
+              <div onClick={() => setNotif((n) => ({ ...n, enabled: !n.enabled }))}
+                style={{ width: 42, height: 23, borderRadius: 999, background: notif.enabled ? '#4f46e5' : '#334155', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
+                <div style={{ position: 'absolute', top: 2.5, width: 17, height: 17, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.4)', left: notif.enabled ? 22 : 3, transition: 'left .2s' }} />
               </div>
             </div>
-            {cfg.notif.enabled && (
+            {notif.enabled && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 <p style={{ fontSize: 11, color: C.mut, fontWeight: 500, margin: 0, paddingLeft: 2 }}>通知の頻度</p>
                 {[{ id: 'daily', l: '毎日 1 回', d: '毎朝9時に危険課題をまとめて通知します' }, { id: 'weekly', l: '週 1 回', d: '毎週月曜日にまとめて通知します' }, { id: 'disabled', l: '無効', d: '自動通知を送りません' }].map((f) => {
-                  const sel = cfg.notif.freq === f.id;
+                  const sel = notif.freq === f.id;
                   return (
-                    <div key={f.id} onClick={() => setCfg((c) => ({ ...c, notif: { ...c.notif, freq: f.id } }))}
+                    <div key={f.id} onClick={() => setNotif((n) => ({ ...n, freq: f.id }))}
                       style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, cursor: 'pointer', border: sel ? '1px solid rgba(96,165,250,.5)' : '1px solid rgba(51,65,85,.4)', background: sel ? 'rgba(96,165,250,.12)' : 'rgba(30,41,59,.35)', transition: 'all .15s' }}>
                       <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${sel ? '#60a5fa' : '#475569'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {sel && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa' }} />}
