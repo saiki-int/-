@@ -761,10 +761,11 @@ function TasksPage() {
   const [modal, setModal]     = useState(null);
   const [delTarget, setDel]   = useState(null);
   const [toast, setToast]     = useState(null);
-  const [fPid, setFPid]       = useState('all');
-  const [fStatus, setFStatus] = useState('all');
-  const [fRisk, setFRisk]     = useState('all');
-  const [search, setSearch]   = useState('');
+  const [fPid, setFPid]           = useState('all');
+  const [fStatus, setFStatus]     = useState('all');
+  const [fRisk, setFRisk]         = useState('all');
+  const [fAssignee, setFAssignee] = useState('all');
+  const [search, setSearch]       = useState('');
 
   const showToast = (msg, type = 'success') => setToast({ msg, type });
   const activeProjects = projects.filter((p) => !p.archived);
@@ -774,9 +775,11 @@ function TasksPage() {
       if (fPid !== 'all' && a.pid !== fPid) return false;
       if (fStatus !== 'all' && a.status !== fStatus) return false;
       if (fRisk !== 'all' && a.risk !== fRisk) return false;
+      if (fAssignee === 'none' && a.uid) return false;
+      if (fAssignee !== 'all' && fAssignee !== 'none' && a.uid !== fAssignee) return false;
       if (search && !a.title.includes(search)) return false;
       return true;
-    }), [assessed, fPid, fStatus, fRisk, search]);
+    }), [assessed, fPid, fStatus, fRisk, fAssignee, search]);
 
   const dangerN  = assessed.filter((a) => a.risk === 'danger'  && !a.snoozed).length;
   const warningN = assessed.filter((a) => a.risk === 'warning' && !a.snoozed).length;
@@ -793,10 +796,25 @@ function TasksPage() {
           </h1>
           <p style={{ fontSize: 11, color: C.mut, margin: '4px 0 0' }}>課題を追加・変更するとダッシュボードにリアルタイムで反映されます</p>
         </div>
-        <button onClick={() => setModal('create')}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 18px', fontSize: 13, fontWeight: 600, borderRadius: 10, border: 'none', background: '#4f46e5', color: '#fff', cursor: 'pointer', boxShadow: '0 4px 12px rgba(79,70,229,.4)' }}>
-          ➕ 課題を追加
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {/* マイタスクボタン */}
+          <button onClick={() => {
+            if (fAssignee === 'all') {
+              // 最初のユーザーを「自分」として仮設定（実際はログイン機能実装後に差し替え）
+              const me = users[0];
+              if (me) { setFAssignee(me.id); }
+            } else {
+              setFAssignee('all');
+            }
+          }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', fontSize: 13, fontWeight: 600, borderRadius: 10, border: `1px solid ${fAssignee !== 'all' ? 'rgba(99,102,241,.5)' : 'rgba(51,65,85,.5)'}`, background: fAssignee !== 'all' ? 'rgba(99,102,241,.2)' : 'transparent', color: fAssignee !== 'all' ? '#a5b4fc' : C.mut, cursor: 'pointer' }}>
+            👤 {fAssignee !== 'all' ? 'マイタスク表示中' : 'マイタスク'}
+          </button>
+          <button onClick={() => setModal('create')}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 18px', fontSize: 13, fontWeight: 600, borderRadius: 10, border: 'none', background: '#4f46e5', color: '#fff', cursor: 'pointer', boxShadow: '0 4px 12px rgba(79,70,229,.4)' }}>
+            ➕ 課題を追加
+          </button>
+        </div>
       </div>
 
       {/* フィルター */}
@@ -804,17 +822,18 @@ function TasksPage() {
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔍 タイトルで検索..."
           style={{ flex: 1, minWidth: 140, background: 'rgba(30,41,59,.6)', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: C.txt, outline: 'none' }} />
         {[
-          { val: fPid,    set: setFPid,    opts: [{ v: 'all', l: '全プロジェクト' }, ...activeProjects.map((p) => ({ v: p.id, l: p.name }))] },
-          { val: fStatus, set: setFStatus, opts: [{ v: 'all', l: '全ステータス' },  ...Object.entries(STATUS_L).map(([v, l]) => ({ v, l }))] },
-          { val: fRisk,   set: setFRisk,   opts: [{ v: 'all', l: '全リスク' }, { v: 'danger', l: '🔴 危険' }, { v: 'warning', l: '🟡 注意' }, { v: 'healthy', l: '🟢 健全' }] },
+          { val: fPid,      set: setFPid,      opts: [{ v: 'all', l: '全プロジェクト' }, ...activeProjects.map((p) => ({ v: p.id, l: p.name }))] },
+          { val: fStatus,   set: setFStatus,   opts: [{ v: 'all', l: '全ステータス' },  ...Object.entries(STATUS_L).map(([v, l]) => ({ v, l }))] },
+          { val: fRisk,     set: setFRisk,     opts: [{ v: 'all', l: '全リスク' }, { v: 'danger', l: '🔴 危険' }, { v: 'warning', l: '🟡 注意' }, { v: 'healthy', l: '🟢 健全' }] },
+          { val: fAssignee, set: setFAssignee, opts: [{ v: 'all', l: '全担当者' }, { v: 'none', l: '担当者未設定' }, ...users.map((u) => ({ v: u.id, l: u.name }))] },
         ].map((f, i) => (
           <select key={i} value={f.val} onChange={(e) => f.set(e.target.value)}
             style={{ background: 'rgba(30,41,59,.6)', border: `1px solid rgba(51,65,85,.5)`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#cbd5e1', cursor: 'pointer', outline: 'none' }}>
             {f.opts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
           </select>
         ))}
-        {(fPid !== 'all' || fStatus !== 'all' || fRisk !== 'all' || search) && (
-          <button onClick={() => { setFPid('all'); setFStatus('all'); setFRisk('all'); setSearch(''); }}
+        {(fPid !== 'all' || fStatus !== 'all' || fRisk !== 'all' || fAssignee !== 'all' || search) && (
+          <button onClick={() => { setFPid('all'); setFStatus('all'); setFRisk('all'); setFAssignee('all'); setSearch(''); }}
             style={{ fontSize: 11, color: C.mut, background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>リセット</button>
         )}
       </div>
@@ -1269,11 +1288,16 @@ function ProjectsPage() {
 function SettingsPage() {
   const { assessed, cfg, setCfg, saveConfig } = useApp(); // ★ グローバルcfgを使用
   const [notif, setNotif] = useState({ enabled: true, freq: 'daily' });
-  const [saved, setSaved] = useState({ ...cfg, notif: { enabled: true, freq: 'daily' } });
+  // savedはcfgの初回読み込み完了後に同期
+  const [saved, setSaved] = useState(null);
   const [status, setStatus] = useState('idle');
   const [toast, setToast] = useState(null);
   const currentState = { ...cfg, notif };
-  const hasChanges = JSON.stringify(currentState) !== JSON.stringify(saved);
+  // cfgが読み込まれたらsavedを初期化（一度だけ）
+  useEffect(() => {
+    if (saved === null) setSaved({ ...cfg, notif });
+  }, [cfg]);
+  const hasChanges = saved !== null && JSON.stringify(currentState) !== JSON.stringify(saved);
 
   const prev = useMemo(() => {
     const tasks = assessed.map((a) => a);
@@ -1388,7 +1412,7 @@ function SettingsPage() {
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => { setCfg({ neglect: { w: 4, d: 8 }, deadline: { w: 3, d: 2 }, overload: { maxT: 5, maxD: 2, rate: 40 } }); setNotif({ enabled: true, freq: 'daily' }); setToast({ msg: '初期値に戻しました' }); }} disabled={!hasChanges}
             style={{ padding: '6px 13px', fontSize: 12, borderRadius: 9, border: '1px solid rgba(71,85,105,.6)', color: hasChanges ? '#94a3b8' : '#334155', background: 'transparent', cursor: hasChanges ? 'pointer' : 'not-allowed' }}>初期値に戻す</button>
-          <button onClick={async () => { setStatus('saving'); await saveConfig(cfg); await new Promise((r) => setTimeout(r, 300)); setSaved(currentState); setStatus('saved'); setToast({ msg: '設定を保存しました。ダッシュボードに反映されました。' }); setTimeout(() => setStatus('idle'), 2500); }} disabled={!hasChanges || status === 'saving'}
+          <button onClick={async () => { setStatus('saving'); await saveConfig(cfg); await new Promise((r) => setTimeout(r, 300)); setSaved({ ...cfg, notif }); setStatus('saved'); setToast({ msg: '設定を保存しました。ダッシュボードに反映されました。' }); setTimeout(() => setStatus('idle'), 2500); }} disabled={!hasChanges || status === 'saving'}
             style={{ padding: '6px 16px', fontSize: 12, fontWeight: 600, borderRadius: 9, border: 'none', cursor: hasChanges ? 'pointer' : 'not-allowed', background: status === 'saved' ? '#16a34a' : hasChanges ? '#4f46e5' : '#1e293b', color: (hasChanges || status === 'saved') ? '#fff' : '#334155' }}>
             {status === 'saving' ? '保存中…' : status === 'saved' ? '✓ 保存しました' : '設定を保存'}
           </button>
