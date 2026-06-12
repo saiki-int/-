@@ -372,7 +372,7 @@ function Confirm({ title, msg, onOk, onCancel }) {
 function SBtn({ label, c, onClick }) {
   const [hov, setHov] = useState(false);
   const s = {
-    blue:  { b: 'rgba(59,130,246,.4)',  t: '#60a5fa', h: 'rgba(59,130,246,.12)' },
+    blue:  { b: 'rgba(59,130,246,.4)',  t: '#0171FF', h: 'rgba(59,130,246,.12)' },
     red:   { b: 'rgba(239,68,68,.4)',   t: '#f87171', h: 'rgba(239,68,68,.12)'  },
     slate: { b: 'rgba(71,85,105,.4)',   t: C.mut,     h: 'rgba(71,85,105,.15)'  },
   }[c];
@@ -493,9 +493,9 @@ function Dashboard({ setPage }) {
   }
 
   const RSTATUS = {
-    danger:  { l: '🔴 危険', bar: C.red, bg: 'rgba(69,10,10,.38)',  bd: 'rgba(185,28,28,.45)' },
-    warning: { l: '🟡 注意', bar: C.yel, bg: 'rgba(66,32,6,.32)',   bd: 'rgba(161,98,7,.4)'   },
-    healthy: { l: '🟢 健全', bar: C.grn, bg: 'rgba(5,46,22,.28)',   bd: 'rgba(20,83,45,.38)'  },
+    danger:  { l: '危険', bar: '#DC2626', bg: '#FFF5F5', bd: '#FECACA' },
+    warning: { l: '注意', bar: '#D97706', bg: '#FFFBEB', bd: '#FDE68A' },
+    healthy: { l: '健全', bar: '#16A34A', bg: '#F0FDF4', bd: '#BBF7D0' },
   };
   const rankItems = filtered.filter((a) => a.risk !== 'healthy' || a.snoozed).slice(0, 5);
 
@@ -513,14 +513,14 @@ function Dashboard({ setPage }) {
           </h1>
           <p style={{ fontSize: 11, color: C.mut, margin: '3px 0 0' }}>マネージャーが3秒で状況を把握するための画面</p>
           <button onClick={() => setPage('tasks')}
-            style={{ marginTop: 6, fontSize: 11, color: '#818cf8', background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.3)', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+            style={{ marginTop: 6, fontSize: 11, color: '#0171FF', background: '#EEF4FF', border: '1px solid #B5D4F4', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
             ➕ 課題を追加・管理 →
           </button>
         </div>
       </div>
 
       {/* フィルター */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '9px 13px', background: rgba(247,247,247,.6)', border: `1px solid ${C.bdr}`, borderRadius: 12, marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '9px 13px', background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 12, marginBottom: 14 }}>
         <span style={{ fontSize: 11, color: C.mut }}>プロジェクト：</span>
         {[{ id: 'all', name: '全体', color: C.mut }, ...activeProjects].map((pr) => {
           const sel = selPid === pr.id;
@@ -537,21 +537,21 @@ function Dashboard({ setPage }) {
       {/* KPI */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 14 }}>
         {[
-          { l: '危険課題',       v: `${kpi.danger}${kpi.snoozed > 0 ? ` (💤${kpi.snoozed})` : ''}`, c: C.red,     bg: 'rgba(69,10,10,.4)',   bd: 'rgba(185,28,28,.4)'  },
-          { l: '7日以上放置',    v: kpi.neglected,  c: C.ora,     bg: 'rgba(124,45,18,.35)', bd: 'rgba(194,65,12,.4)'  },
-          { l: '期限超過',       v: kpi.overdue,    c: C.yel,     bg: 'rgba(113,63,18,.35)', bd: 'rgba(161,98,7,.4)'   },
-          { l: '負荷集中メンバー',v: `${overloaded}人`,c:'#a78bfa', bg: 'rgba(46,16,101,.35)', bd: 'rgba(109,40,217,.4)' },
+          { l: '危険課題',        v: `${kpi.danger}${kpi.snoozed > 0 ? ` (💤${kpi.snoozed})` : ''}`, c: '#DC2626', accent: '#DC2626' },
+          { l: '7日以上放置',     v: kpi.neglected,    c: '#EA580C', accent: '#EA580C' },
+          { l: '期限超過',        v: kpi.overdue,      c: '#D97706', accent: '#D97706' },
+          { l: '負荷集中メンバー', v: `${overloaded}人`, c: '#0171FF', accent: '#0171FF' },
         ].map((it) => (
-          <div key={it.l} style={{ borderRadius: 12, padding: '12px 14px', background: it.bg, border: `1px solid ${it.bd}` }}>
-            <p style={{ fontSize: 11, color: it.c, margin: '0 0 5px' }}>{it.l}</p>
-            <p style={{ fontSize: 28, fontWeight: 700, color: it.c, margin: 0, lineHeight: 1 }}>{it.v}</p>
+          <div key={it.l} style={{ borderRadius: 12, padding: '14px 16px', background: '#FFFFFF', border: `1px solid #DBE1EA`, borderTop: `3px solid ${it.accent}`, boxShadow: '0 1px 4px rgba(61,66,75,.08)' }}>
+            <p style={{ fontSize: 11, color: '#A2A8B4', margin: '0 0 6px', fontWeight: 500 }}>{it.l}</p>
+            <p style={{ fontSize: 30, fontWeight: 700, color: it.c, margin: 0, lineHeight: 1 }}>{it.v}</p>
           </div>
         ))}
       </div>
 
       {/* AIサマリー */}
-      <div style={{ borderRadius: 12, border: '1px solid rgba(99,102,241,.4)', background: 'linear-gradient(90deg,rgba(30,27,75,.5),rgba(46,16,101,.3))', padding: '12px 16px', marginBottom: 14, display: 'flex', gap: 12 }}>
-        <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(99,102,241,.15)', border: '1px solid rgba(99,102,241,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🤖</div>
+      <div style={{ borderRadius: 12, border: '1px solid #B5D4F4', borderLeft: '4px solid #0171FF', background: '#FFFFFF', padding: '12px 16px', marginBottom: 14, display: 'flex', gap: 12, boxShadow: '0 1px 4px rgba(1,113,255,.08)' }}>
+        <div style={{ width: 34, height: 34, borderRadius: 8, background: '#EEF4FF', border: '1px solid #B5D4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🤖</div>
         <div>
           <p style={{ fontSize: 11, fontWeight: 600, color: '#0171FF', margin: '0 0 4px' }}>AIマネージャーサマリー</p>
           <p style={{ fontSize: 12, color: '#3D424B', lineHeight: 1.7, margin: 0 }}>{summary}</p>
@@ -567,14 +567,14 @@ function Dashboard({ setPage }) {
         const overloadedM = members.find((m) => m.status === 'overloaded');
         if (overloadedM) actions.push({ num: 2, title: `${overloadedM.user.name}さんの課題を再配分`, detail: `危険課題が${overloadedM.danger}件集中しています。他のメンバーへの振り直しを検討してください。`, color: C.ora });
         const unassigned = active.find((a) => a.reasons.includes('unassigned'));
-        if (unassigned) actions.push({ num: 3, title: `「${unassigned.title}」に担当者を設定`, detail: '担当者が未設定のまま放置されています。すぐに割り当ててください。', color: '#a78bfa' });
+        if (unassigned) actions.push({ num: 3, title: `「${unassigned.title}」に担当者を設定`, detail: '担当者が未設定のまま放置されています。すぐに割り当ててください。', color: '#0087C6' });
         if (actions.length === 0) return null;
         return (
           <div style={{ marginBottom: 14 }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>📌 今日の推奨アクション</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {actions.map((a) => (
-                <div key={a.num} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#F1F5FB', border: `1px solid rgba(51,65,85,.5)` }}>
+                <div key={a.num} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#FFFFFF', border: '1px solid #DBE1EA' }}>
                   <span style={{ width: 22, height: 22, borderRadius: '50%', background: a.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>{a.num}</span>
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 600, color: C.txt, margin: 0 }}>{a.title}</p>
@@ -599,20 +599,20 @@ function Dashboard({ setPage }) {
               const due = a.due ? (daysDiff(a.due) > 0 ? `${daysDiff(a.due)}日超過` : daysDiff(a.due) === 0 ? '今日' : `あと${Math.abs(daysDiff(a.due))}日`) : '期限なし';
               const proj = activeProjects.find((x) => x.id === a.pid);
               return (
-                <div key={a.id} style={{ borderRadius: 11, border: `1px solid ${a.snoozed ? 'rgba(219,225,234,.4)' : isDanger ? 'rgba(185,28,28,.45)' : 'rgba(161,98,7,.4)'}`, background: a.snoozed ? 'rgba(0,113,255,.3)' : isDanger ? 'rgba(69,10,10,.28)' : 'rgba(66,32,6,.22)', padding: '10px 13px', opacity: a.snoozed ? 0.6 : 1 }}>
+                <div key={a.id} style={{ borderRadius: 11, border: `1px solid ${a.snoozed ? 'rgba(219,225,234,.4)' : isDanger ? '#FECACA' : '#FDE68A'}`, background: a.snoozed ? 'rgba(0,113,255,.3)' : isDanger ? 'rgba(69,10,10,.28)' : 'rgba(66,32,6,.22)', padding: '10px 13px', opacity: a.snoozed ? 0.6 : 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
                     <span style={{ width: 20, height: 20, borderRadius: '50%', background: a.snoozed ? '#DBE1EA' : i === 0 ? '#ef4444' : i === 1 ? '#f97316' : '#DBE1EA', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
                       {a.snoozed ? '💤' : i + 1}
                     </span>
                     <span style={{ fontSize: 13, fontWeight: 600, color: C.txt, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</span>
                     {proj && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: proj.color + '20', color: proj.color, border: `1px solid ${proj.color}40`, flexShrink: 0 }}>{proj.name}</span>}
-                    {!a.snoozed && <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 999, border: '1px solid', flexShrink: 0, ...(isDanger ? { background: 'rgba(239,68,68,.2)', color: '#fca5a5', borderColor: 'rgba(239,68,68,.4)' } : { background: 'rgba(234,179,8,.2)', color: '#fde68a', borderColor: 'rgba(234,179,8,.4)' }) }}>
+                    {!a.snoozed && <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 999, border: '1px solid', flexShrink: 0, ...(isDanger ? { background: '#FEE2E2', color: '#DC2626', borderColor: '#FECACA' } : { background: '#FEF9C3', color: '#B45309', borderColor: '#FDE68A' }) }}>
                       {isDanger ? '🔴 危険' : '🟡 注意'}
                     </span>}
                   </div>
                   {!a.snoozed && a.reasons.length > 0 && (
                     <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginBottom: 6 }}>
-                      {a.reasons.map((r) => <span key={r} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: isDanger ? 'rgba(239,68,68,.1)' : 'rgba(234,179,8,.1)', color: isDanger ? '#fca5a5' : '#fde68a', border: `1px solid ${isDanger ? 'rgba(239,68,68,.3)' : 'rgba(234,179,8,.3)'}` }}>⚠ {REASON_LABELS[r]}</span>)}
+                      {a.reasons.map((r) => <span key={r} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 4, background: isDanger ? '#FEE2E2' : '#FEF9C3', color: isDanger ? '#DC2626' : '#B45309', border: `1px solid ${isDanger ? '#FECACA' : '#FDE68A'}` }}>⚠ {REASON_LABELS[r]}</span>)}
                     </div>
                   )}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
@@ -705,7 +705,7 @@ function Dashboard({ setPage }) {
             <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>メンバー負荷</p>
             <div style={{ borderRadius: 10, border: `1px solid ${C.bdr}`, background: '#FFFFFF', overflow: 'hidden' }}>
               {members.map((m, i) => {
-                const stColor = m.status === 'overloaded' ? '#fca5a5' : m.status === 'warning' ? '#fde68a' : '#86efac';
+                const stColor = m.status === 'overloaded' ? '#DC2626' : m.status === 'warning' ? '#B45309' : '#86efac';
                 const stLabel = m.status === 'overloaded' ? '負荷集中' : m.status === 'warning' ? '注意' : '健全';
                 return (
                   <div key={m.user.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: i < members.length - 1 ? `1px solid rgba(219,225,234,.8)` : 'none', background: m.status === 'overloaded' ? 'rgba(69,10,10,.1)' : m.status === 'warning' ? 'rgba(66,32,6,.08)' : 'transparent' }}>
@@ -735,7 +735,7 @@ function Dashboard({ setPage }) {
         const stats = Object.entries(counts).map(([r, n]) => ({ r, n, l: REASON_LABELS[r] ?? r })).sort((a, b) => b.n - a.n);
         if (stats.length === 0) return null;
         const max = Math.max(...stats.map(s => s.n), 1);
-        const RCOLORS = { stale: C.yel, overdue: C.red, unassigned: C.ora, highNear: '#f87171', workload: '#a78bfa', staleWarn: '#fbbf24', nearDL: '#fde68a' };
+        const RCOLORS = { stale: C.yel, overdue: C.red, unassigned: C.ora, highNear: '#f87171', workload: '#0087C6', staleWarn: '#fbbf24', nearDL: '#B45309' };
         return (
           <div style={{ marginBottom: 14 }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>遅延原因の内訳</p>
@@ -805,8 +805,8 @@ function TasksPage() {
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: C.txt, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
             📋 課題管理
-            <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 999, background: 'rgba(239,68,68,.2)', color: '#fca5a5', border: '1px solid rgba(239,68,68,.35)' }}>危険 {dangerN}</span>
-            <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 999, background: 'rgba(234,179,8,.15)', color: '#fde68a', border: '1px solid rgba(234,179,8,.3)' }}>注意 {warningN}</span>
+            <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 999, background: '#FEE2E2', color: '#DC2626', border: '1px solid #FECACA' }}>危険 {dangerN}</span>
+            <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 999, background: '#FEF9C3', color: '#B45309', border: '1px solid #FDE68A' }}>注意 {warningN}</span>
           </h1>
           <p style={{ fontSize: 11, color: C.mut, margin: '4px 0 0' }}>課題を追加・変更するとダッシュボードにリアルタイムで反映されます</p>
         </div>
@@ -832,9 +832,9 @@ function TasksPage() {
       </div>
 
       {/* フィルター */}
-      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, padding: '9px 12px', background: rgba(247,247,247,.6)', border: `1px solid ${C.bdr}`, borderRadius: 11 }}>
+      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, padding: '9px 12px', background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 11 }}>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔍 タイトルで検索..."
-          style={{ flex: 1, minWidth: 140, background: 'rgba(0,113,255,.6)', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: C.txt, outline: 'none' }} />
+          style={{ flex: 1, minWidth: 140, background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: C.txt, outline: 'none' }} />
         {[
           { val: fPid,      set: setFPid,      opts: [{ v: 'all', l: '全プロジェクト' }, ...activeProjects.map((p) => ({ v: p.id, l: p.name }))] },
           { val: fStatus,   set: setFStatus,   opts: [{ v: 'all', l: '全ステータス' },  ...Object.entries(STATUS_L).map(([v, l]) => ({ v, l }))] },
@@ -842,7 +842,7 @@ function TasksPage() {
           { val: fAssignee, set: setFAssignee, opts: [{ v: 'all', l: '全担当者' }, { v: 'none', l: '担当者未設定' }, ...users.map((u) => ({ v: u.id, l: u.name }))] },
         ].map((f, i) => (
           <select key={i} value={f.val} onChange={(e) => f.set(e.target.value)}
-            style={{ background: 'rgba(0,113,255,.6)', border: `1px solid rgba(51,65,85,.5)`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#3D424B', cursor: 'pointer', outline: 'none' }}>
+            style={{ background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#3D424B', cursor: 'pointer', outline: 'none' }}>
             {f.opts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
           </select>
         ))}
@@ -908,10 +908,10 @@ function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, o
   const stale = daysDiff(a.upd);
   const dueD  = a.due ? (daysDiff(a.due) > 0 ? `${daysDiff(a.due)}日超過` : daysDiff(a.due) === 0 ? '今日' : `${Math.abs(daysDiff(a.due))}日後`) : '—';
   const dueOver = a.due && daysDiff(a.due) > 0;
-  const RBGS = { danger: 'rgba(69,10,10,.4)', warning: 'rgba(66,32,6,.3)', healthy: 'transparent' };
+  const RBGS = { danger: '#FFF5F5', warning: '#FFFBEB', healthy: 'transparent' };
 
   return (
-    <tr style={{ background: a.snoozed ? 'rgba(0,113,255,.2)' : hov ? 'rgba(0,113,255,.5)' : RBGS[a.risk], borderBottom: `1px solid ${C.bdr}`, opacity: a.snoozed ? 0.55 : 1, transition: 'background .15s' }}
+    <tr style={{ background: a.snoozed ? '#EEF4FF' : hov ? '#F0F6FF' : RBGS[a.risk], borderBottom: `1px solid ${C.bdr}`, opacity: a.snoozed ? 0.55 : 1, transition: 'background .15s' }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
       <td style={{ width: 3, padding: 0 }}>
         <div style={{ width: 3, height: 48, background: a.snoozed ? '#DBE1EA' : a.risk === 'danger' ? C.red : a.risk === 'warning' ? C.yel : 'transparent' }} />
@@ -928,7 +928,7 @@ function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, o
             </p>
             {!a.snoozed && a.reasons.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, marginTop: 4 }}>
-                {a.reasons.map((r) => <span key={r} style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: a.risk === 'danger' ? 'rgba(239,68,68,.15)' : 'rgba(234,179,8,.15)', color: a.risk === 'danger' ? '#fca5a5' : '#fde68a', border: `1px solid ${a.risk === 'danger' ? 'rgba(239,68,68,.3)' : 'rgba(234,179,8,.3)'}` }}>⚠ {REASON_LABELS[r]}</span>)}
+                {a.reasons.map((r) => <span key={r} style={{ fontSize: 9, padding: '1px 5px', borderRadius: 3, background: a.risk === 'danger' ? 'rgba(239,68,68,.15)' : 'rgba(234,179,8,.15)', color: a.risk === 'danger' ? '#DC2626' : '#B45309', border: `1px solid ${a.risk === 'danger' ? 'rgba(239,68,68,.3)' : 'rgba(234,179,8,.3)'}` }}>⚠ {REASON_LABELS[r]}</span>)}
               </div>
             )}
             {a.snoozed && a.snooze && <span style={{ fontSize: 9, color: '#64748B' }}>💤 {new Date(a.snooze).toLocaleDateString('ja-JP')}まで</span>}
@@ -997,16 +997,16 @@ function TaskModal({ task, projects, users, onSave, onClose }) {
   const [err, setErr] = useState({});
 
   const hints = [];
-  if (!form.uid) hints.push({ t: '⚠', c: '#fca5a5', m: '担当者が未設定 → 危険課題として判定されます' });
+  if (!form.uid) hints.push({ t: '⚠', c: '#DC2626', m: '担当者が未設定 → 危険課題として判定されます' });
   if (form.upd) {
     const d = daysDiff(new Date(form.upd));
-    if (d >= 8) hints.push({ t: '⚠', c: '#fca5a5', m: `最終更新が${d}日前 → 放置・危険判定されます` });
+    if (d >= 8) hints.push({ t: '⚠', c: '#DC2626', m: `最終更新が${d}日前 → 放置・危険判定されます` });
     else if (d >= 4) hints.push({ t: 'ℹ', c: '#93c5fd', m: `最終更新が${d}日前 → 注意課題として表示されます` });
   }
   if (form.due) {
     const d = Math.floor((new Date(form.due) - Date.now()) / 86400000);
-    if (d < 0) hints.push({ t: '⚠', c: '#fca5a5', m: `期限を${Math.abs(d)}日超過 → 危険課題として判定されます` });
-    else if (d <= 2 && form.pri === 'high') hints.push({ t: '⚠', c: '#fca5a5', m: `高優先度・期限まで${d}日以内 → 危険判定されます` });
+    if (d < 0) hints.push({ t: '⚠', c: '#DC2626', m: `期限を${Math.abs(d)}日超過 → 危険課題として判定されます` });
+    else if (d <= 2 && form.pri === 'high') hints.push({ t: '⚠', c: '#DC2626', m: `高優先度・期限まで${d}日以内 → 危険判定されます` });
     else if (d <= 3) hints.push({ t: 'ℹ', c: '#93c5fd', m: `期限まで${d}日 → 注意課題として表示されます` });
   }
 
@@ -1025,7 +1025,7 @@ function TaskModal({ task, projects, users, onSave, onClose }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '40px 16px 16px', overflowY: 'auto' }}>
       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.65)', backdropFilter: 'blur(4px)' }} onClick={onClose} />
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 580, borderRadius: 16, border: `1px solid ${task ? 'rgba(219,225,234,.5)' : 'rgba(99,102,241,.4)'}`, background: C.bg, padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,.7)' }}>
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 580, borderRadius: 16, border: `1px solid ${task ? 'rgba(219,225,234,.5)' : '#B5D4F4'}`, background: C.bg, padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,.7)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: C.txt, margin: 0 }}>{task ? '✏️ 課題を編集' : '➕ 課題を作成'}</h2>
@@ -1101,7 +1101,7 @@ function TaskModal({ task, projects, users, onSave, onClose }) {
             </div>
           </div>
           {hints.length > 0 && (
-            <div style={{ borderRadius: 8, background: 'rgba(0,113,255,.6)', border: `1px solid ${C.bdr}`, padding: '10px 12px' }}>
+            <div style={{ borderRadius: 8, background: '#FFFFFF', border: `1px solid ${C.bdr}`, padding: '10px 12px' }}>
               <p style={{ fontSize: 10, fontWeight: 600, color: C.mut, margin: '0 0 5px' }}>📊 ダッシュボードへの反映イメージ</p>
               {hints.map((h, i) => <p key={i} style={{ fontSize: 11, color: h.c, margin: '2px 0' }}>{h.t} {h.m}</p>)}
             </div>
@@ -1129,8 +1129,8 @@ function PForm({ initial, editId: eid, allProjects, onSave, onCancel, isNew }) {
   const [e, setE] = useState({});
   const iStyle = { width: '100%', borderRadius: 8, background: rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '7px 10px', fontSize: 13, color: C.txt, outline: 'none' };
   return (
-    <div style={{ borderRadius: 11, border: `1px solid ${isNew ? 'rgba(99,102,241,.4)' : 'rgba(219,225,234,.5)'}`, background: isNew ? 'rgba(99,102,241,.07)' : 'rgba(0,113,255,.5)', padding: 14, marginBottom: isNew ? 11 : 0 }}>
-      {isNew && <p style={{ fontSize: 10, fontWeight: 600, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 9 }}>＋ 新規プロジェクト</p>}
+    <div style={{ borderRadius: 11, border: `1px solid ${isNew ? '#B5D4F4' : 'rgba(219,225,234,.5)'}`, background: isNew ? 'rgba(99,102,241,.07)' : 'rgba(0,113,255,.5)', padding: 14, marginBottom: isNew ? 11 : 0 }}>
+      {isNew && <p style={{ fontSize: 10, fontWeight: 600, color: '#0171FF', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 9 }}>＋ 新規プロジェクト</p>}
       <div style={{ marginBottom: 10 }}>
         <label style={{ fontSize: 11, fontWeight: 500, color: '#3D424B', display: 'block', marginBottom: 4 }}>プロジェクト名 <span style={{ color: '#f87171' }}>*</span></label>
         <input value={f.name} maxLength={30} autoFocus onChange={(ev) => { setF((v) => ({ ...v, name: ev.target.value })); setE((v) => ({ ...v, name: '' })); }}
@@ -1193,7 +1193,7 @@ function ProjectsPage() {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: 'rgba(0,113,255,.6)', border: `1px solid ${C.bdr}`, color: '#3D424B', fontWeight: 500 }}>アクティブ {active.length}件</span>
+          <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: '#FFFFFF', border: `1px solid ${C.bdr}`, color: '#3D424B', fontWeight: 500 }}>アクティブ {active.length}件</span>
           {archived.length > 0 && (
             <>
               <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: '#F8FAFF', border: `1px solid rgba(51,65,85,.3)`, color: C.mut }}>アーカイブ {archived.length}件</span>
@@ -1351,10 +1351,10 @@ function SettingsPage() {
 
   const Slider = ({ label, hint, val, min, max, step = 1, unit, color, markerVal, markerLabel, onChange }) => {
     const COLS = {
-      yellow: { fill: '#facc15', bText: '#fde68a', bBd: 'rgba(250,204,21,.3)', bBg: 'rgba(250,204,21,.12)' },
-      red:    { fill: '#ef4444', bText: '#fca5a5', bBd: 'rgba(239,68,68,.3)',  bBg: 'rgba(239,68,68,.12)'  },
-      blue:   { fill: '#60a5fa', bText: '#93c5fd', bBd: 'rgba(96,165,250,.3)', bBg: 'rgba(96,165,250,.12)' },
-      purple: { fill: '#a78bfa', bText: '#c4b5fd', bBd: 'rgba(167,139,250,.3)',bBg: 'rgba(167,139,250,.12)'},
+      yellow: { fill: '#facc15', bText: '#B45309', bBd: 'rgba(250,204,21,.3)', bBg: 'rgba(250,204,21,.12)' },
+      red:    { fill: '#ef4444', bText: '#DC2626', bBd: 'rgba(239,68,68,.3)',  bBg: 'rgba(239,68,68,.12)'  },
+      blue:   { fill: '#0171FF', bText: '#93c5fd', bBd: 'rgba(96,165,250,.3)', bBg: 'rgba(96,165,250,.12)' },
+      purple: { fill: '#0087C6', bText: '#c4b5fd', bBd: 'rgba(167,139,250,.3)',bBg: 'rgba(167,139,250,.12)'},
     };
     const c = COLS[color] ?? COLS.blue;
     const pct  = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
@@ -1391,9 +1391,9 @@ function SettingsPage() {
   };
 
   const SEC = {
-    yellow: { bd: 'rgba(161,98,7,.4)',   bg: 'rgba(66,32,6,.2)',   iconBg: 'rgba(250,204,21,.08)', iconBd: 'rgba(250,204,21,.2)'  },
-    red:    { bd: 'rgba(185,28,28,.4)',  bg: 'rgba(69,10,10,.2)',  iconBg: 'rgba(239,68,68,.08)',  iconBd: 'rgba(239,68,68,.2)'   },
-    purple: { bd: 'rgba(109,40,217,.4)', bg: 'rgba(46,16,101,.2)', iconBg: 'rgba(167,139,250,.08)',iconBd: 'rgba(167,139,250,.2)' },
+    yellow: { bd: '#FDE68A',   bg: 'rgba(66,32,6,.2)',   iconBg: 'rgba(250,204,21,.08)', iconBd: 'rgba(250,204,21,.2)'  },
+    red:    { bd: '#FECACA',  bg: 'rgba(69,10,10,.2)',  iconBg: 'rgba(239,68,68,.08)',  iconBd: 'rgba(239,68,68,.2)'   },
+    purple: { bd: '#B5D4F4', bg: 'rgba(46,16,101,.2)', iconBg: 'rgba(167,139,250,.08)',iconBd: 'rgba(167,139,250,.2)' },
     blue:   { bd: 'rgba(29,78,216,.4)',  bg: 'rgba(23,37,84,.2)',  iconBg: 'rgba(96,165,250,.08)', iconBd: 'rgba(96,165,250,.2)'  },
   };
   const Section = ({ emoji, title, desc, color, children }) => {
@@ -1480,8 +1480,8 @@ function SettingsPage() {
                   return (
                     <div key={f.id} onClick={() => setNotif((n) => ({ ...n, freq: f.id }))}
                       style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, cursor: 'pointer', border: sel ? '1px solid rgba(96,165,250,.5)' : '1px solid rgba(51,65,85,.4)', background: sel ? 'rgba(96,165,250,.12)' : 'rgba(0,113,255,.35)', transition: 'all .15s' }}>
-                      <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${sel ? '#60a5fa' : '#64748B'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {sel && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa' }} />}
+                      <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${sel ? '#0171FF' : '#64748B'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {sel && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#0171FF' }} />}
                       </div>
                       <div>
                         <p style={{ fontSize: 12, fontWeight: 500, color: sel ? '#93c5fd' : '#A2A8B4', margin: 0 }}>{f.l}</p>
@@ -1511,9 +1511,9 @@ function SettingsPage() {
               </span>}
             </div>
             {[
-              { l: '危険課題',       v: prev.danger,    of: prev.total, unit: '件', tc: '#f87171', bg: 'rgba(69,10,10,.45)',   bd: 'rgba(185,28,28,.4)',  bar: C.red     },
+              { l: '危険課題',       v: prev.danger,    of: prev.total, unit: '件', tc: '#f87171', bg: 'rgba(69,10,10,.45)',   bd: '#FECACA',  bar: C.red     },
               { l: '注意課題',       v: prev.warning,   of: prev.total, unit: '件', tc: '#facc15', bg: 'rgba(66,32,6,.4)',    bd: 'rgba(161,98,7,.35)',  bar: C.yel     },
-              { l: '負荷集中メンバー',v: prev.overloaded,of: 5,          unit: '人', tc: '#c4b5fd', bg: 'rgba(46,16,101,.4)', bd: 'rgba(109,40,217,.4)', bar: '#a78bfa' },
+              { l: '負荷集中メンバー',v: prev.overloaded,of: 5,          unit: '人', tc: '#c4b5fd', bg: '#EEF4FF', bd: '#B5D4F4', bar: '#0087C6' },
             ].map((k) => {
               const pct = k.of > 0 ? Math.round((k.v / k.of) * 100) : 0;
               return (
@@ -1528,7 +1528,7 @@ function SettingsPage() {
               );
             })}
             {(() => {
-              const s = prev.healthPct >= 70 ? { icon: '🟢', l: '良好', bar: C.grn, bd: 'rgba(20,83,45,.35)', bg: 'rgba(5,46,22,.22)' } : prev.healthPct >= 40 ? { icon: '🟡', l: '注意あり', bar: C.yel, bd: 'rgba(161,98,7,.35)', bg: 'rgba(66,32,6,.22)' } : { icon: '🔴', l: '要対応', bar: C.red, bd: 'rgba(185,28,28,.4)', bg: 'rgba(69,10,10,.3)' };
+              const s = prev.healthPct >= 70 ? { icon: '🟢', l: '良好', bar: C.grn, bd: 'rgba(20,83,45,.35)', bg: 'rgba(5,46,22,.22)' } : prev.healthPct >= 40 ? { icon: '🟡', l: '注意あり', bar: C.yel, bd: 'rgba(161,98,7,.35)', bg: 'rgba(66,32,6,.22)' } : { icon: '🔴', l: '要対応', bar: C.red, bd: '#FECACA', bg: 'rgba(69,10,10,.3)' };
               return (
                 <div style={{ borderRadius: 9, border: `1px solid ${s.bd}`, background: s.bg, padding: '9px 11px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 }}>
