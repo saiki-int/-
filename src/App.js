@@ -17,18 +17,17 @@ const genId = () => `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
 
 // ── 定数 ────────────────────────────────────────────────────────
 const C = {
-  // ── INTLOOPブランドカラー ──────────────────────────────────
-  bg:  '#F7F7F7',           // ページ背景（ライトグレー）
-  sur: '#FFFFFF',           // カード背景（ホワイト）
-  bdr: 'rgba(219,225,234,.8)', // ボーダー（ライトグレー #DBE1EA）
+  // ── INTLOOPサイト準拠カラー ───────────────────────────────
+  bg:  '#FFFFFF',           // ページ背景（白）
+  sur: '#F7F7F7',           // カード背景（ライトグレー）
+  bdr: '#DBE1EA',           // ボーダー
   txt: '#3D424B',           // テキスト（チャコール）
   mut: '#A2A8B4',           // ミュートテキスト
-  dim: '#DBE1EA',           // ディム（ライトグレー）
-  // ── アクセントカラー ──────────────────────────────────────
-  blue: '#0171FF',          // INTLOOPメインブルー
-  blueDark: '#0087C6',      // INTLOOPダークブルー
+  dim: '#DBE1EA',           // ディム
+  blu: '#0171FF',           // INTLOOPメインブルー（アクセント）
+  bld: '#0087C6',           // INTLOOPダークブルー
   // ── セマンティックカラー ──────────────────────────────────
-  red: '#ef4444', ora: '#f97316', yel: '#f59e0b', grn: '#22c55e',
+  red: '#EF4444', ora: '#F97316', yel: '#F59E0B', grn: '#22C55E',
 };
 
 // CFGはContextで管理（設定画面と共有）
@@ -395,11 +394,17 @@ function Nav({ page, setPage }) {
     { id: 'settings',  label: '⚙️ 設定' },
   ];
   return (
-    <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: '#0171FF', borderBottom: 'none', padding: '0 16px', display: 'flex', alignItems: 'center', height: 48 }}>
-      <span style={{ fontSize: 14, fontWeight: 700, color: '#FFFFFF', marginRight: 24, letterSpacing: '-.01em' }}>TrackFlow</span>
+    <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: '#0171FF', borderBottom: 'none', padding: '0 20px', display: 'flex', alignItems: 'center', height: 52, boxShadow: '0 2px 12px rgba(1,113,255,.3)' }}>
+      <span style={{ fontSize: 15, fontWeight: 700, color: '#FFFFFF', marginRight: 32, letterSpacing: '-.01em' }}>TrackFlow</span>
       {links.map((l) => (
         <button key={l.id} onClick={() => setPage(l.id)}
-          style={{ padding: '4px 12px', borderRadius: 6, fontSize: 13, border: 'none', cursor: 'pointer', transition: 'all .15s', background: page === l.id ? 'rgba(255,255,255,.2)' : 'transparent', color: page === l.id ? '#FFFFFF' : 'rgba(255,255,255,.75)', fontWeight: page === l.id ? 600 : 400 }}>
+          style={{ padding: '5px 14px', borderRadius: 6, fontSize: 13, border: 'none', cursor: 'pointer', transition: 'all .15s',
+            background: page === l.id ? 'rgba(255,255,255,.18)' : 'transparent',
+            color: '#FFFFFF',
+            fontWeight: page === l.id ? 600 : 400,
+            opacity: page === l.id ? 1 : 0.75,
+            borderBottom: page === l.id ? '2px solid rgba(255,255,255,.7)' : '2px solid transparent',
+          }}>
           {l.label}
         </button>
       ))}
@@ -515,7 +520,7 @@ function Dashboard({ setPage }) {
       </div>
 
       {/* フィルター */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '9px 13px', background: 'rgba(247,247,247,.6)', border: `1px solid ${C.bdr}`, borderRadius: 12, marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '9px 13px', background: rgba(247,247,247,.6)', border: `1px solid ${C.bdr}`, borderRadius: 12, marginBottom: 14 }}>
         <span style={{ fontSize: 11, color: C.mut }}>プロジェクト：</span>
         {[{ id: 'all', name: '全体', color: C.mut }, ...activeProjects].map((pr) => {
           const sel = selPid === pr.id;
@@ -548,7 +553,7 @@ function Dashboard({ setPage }) {
       <div style={{ borderRadius: 12, border: '1px solid rgba(99,102,241,.4)', background: 'linear-gradient(90deg,rgba(30,27,75,.5),rgba(46,16,101,.3))', padding: '12px 16px', marginBottom: 14, display: 'flex', gap: 12 }}>
         <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(99,102,241,.15)', border: '1px solid rgba(99,102,241,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🤖</div>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 600, color: '#0171ff', margin: '0 0 4px' }}>AIマネージャーサマリー</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: '#0171FF', margin: '0 0 4px' }}>AIマネージャーサマリー</p>
           <p style={{ fontSize: 12, color: '#3D424B', lineHeight: 1.7, margin: 0 }}>{summary}</p>
         </div>
       </div>
@@ -566,7 +571,7 @@ function Dashboard({ setPage }) {
         if (actions.length === 0) return null;
         return (
           <div style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>📌 今日の推奨アクション</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>📌 今日の推奨アクション</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {actions.map((a) => (
                 <div key={a.num} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#F1F5FB', border: `1px solid rgba(51,65,85,.5)` }}>
@@ -594,7 +599,7 @@ function Dashboard({ setPage }) {
               const due = a.due ? (daysDiff(a.due) > 0 ? `${daysDiff(a.due)}日超過` : daysDiff(a.due) === 0 ? '今日' : `あと${Math.abs(daysDiff(a.due))}日`) : '期限なし';
               const proj = activeProjects.find((x) => x.id === a.pid);
               return (
-                <div key={a.id} style={{ borderRadius: 11, border: `1px solid ${a.snoozed ? 'rgba(219,225,234,.4)' : isDanger ? 'rgba(185,28,28,.45)' : 'rgba(161,98,7,.4)'}`, background: a.snoozed ? 'rgba(241,245,251,.3)' : isDanger ? 'rgba(69,10,10,.28)' : 'rgba(66,32,6,.22)', padding: '10px 13px', opacity: a.snoozed ? 0.6 : 1 }}>
+                <div key={a.id} style={{ borderRadius: 11, border: `1px solid ${a.snoozed ? 'rgba(219,225,234,.4)' : isDanger ? 'rgba(185,28,28,.45)' : 'rgba(161,98,7,.4)'}`, background: a.snoozed ? 'rgba(0,113,255,.3)' : isDanger ? 'rgba(69,10,10,.28)' : 'rgba(66,32,6,.22)', padding: '10px 13px', opacity: a.snoozed ? 0.6 : 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
                     <span style={{ width: 20, height: 20, borderRadius: '50%', background: a.snoozed ? '#DBE1EA' : i === 0 ? '#ef4444' : i === 1 ? '#f97316' : '#DBE1EA', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0 }}>
                       {a.snoozed ? '💤' : i + 1}
@@ -622,7 +627,7 @@ function Dashboard({ setPage }) {
                         {isSnoozed(a) ? '💤 解除' : '💤 スヌーズ'}
                       </button>
                       {snoozeMenu === a.id && (
-                        <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 40, background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 150, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 40, background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 150, overflow: 'hidden' }}>
                           {(isSnoozed(a) ? [{ l: 'スヌーズ解除', d: null }] : [{ l: '7日間スヌーズ', d: 7 }, { l: '14日間スヌーズ', d: 14 }, { l: '30日間スヌーズ', d: 30 }]).map((o) => (
                             <button key={o.l} onClick={() => { snoozeTask(a.id, o.d); setSnoozeMenu(null); setToast({ msg: o.d ? `${o.d}日間スヌーズしました` : 'スヌーズを解除しました', type: o.d ? 'success' : 'info' }); }}
                               style={{ display: 'block', width: '100%', padding: '8px 12px', fontSize: 11, color: C.txt, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
@@ -645,7 +650,7 @@ function Dashboard({ setPage }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {selPid === 'all' ? (
             <div>
-              <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>プロジェクト健康度</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>プロジェクト健康度</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {projHealth.map((ph) => {
                   const st = RSTATUS[ph.status];
@@ -673,7 +678,7 @@ function Dashboard({ setPage }) {
             const st = RSTATUS[ph.status];
             return (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>プロジェクト健康度</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>プロジェクト健康度</p>
                 <div style={{ borderRadius: 10, border: `1px solid ${st.bd}`, background: st.bg, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <div style={{ width: 3, height: 32, borderRadius: 999, background: ph.color, flexShrink: 0 }} />
@@ -697,8 +702,8 @@ function Dashboard({ setPage }) {
 
           {/* メンバー負荷 */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>メンバー負荷</p>
-            <div style={{ borderRadius: 10, border: `1px solid ${C.bdr}`, background: C.sur, overflow: 'hidden' }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>メンバー負荷</p>
+            <div style={{ borderRadius: 10, border: `1px solid ${C.bdr}`, background: '#FFFFFF', overflow: 'hidden' }}>
               {members.map((m, i) => {
                 const stColor = m.status === 'overloaded' ? '#fca5a5' : m.status === 'warning' ? '#fde68a' : '#86efac';
                 const stLabel = m.status === 'overloaded' ? '負荷集中' : m.status === 'warning' ? '注意' : '健全';
@@ -733,8 +738,8 @@ function Dashboard({ setPage }) {
         const RCOLORS = { stale: C.yel, overdue: C.red, unassigned: C.ora, highNear: '#f87171', workload: '#a78bfa', staleWarn: '#fbbf24', nearDL: '#fde68a' };
         return (
           <div style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.06em', margin: '0 0 8px' }}>遅延原因の内訳</p>
-            <div style={{ borderRadius: 12, border: `1px solid ${C.bdr}`, background: C.sur, padding: 14 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>遅延原因の内訳</p>
+            <div style={{ borderRadius: 12, border: `1px solid ${C.bdr}`, background: '#FFFFFF', padding: 14 }}>
               {stats.map(s => (
                 <div key={s.r} style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
@@ -816,7 +821,7 @@ function TasksPage() {
               setFAssignee('all');
             }
           }}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', fontSize: 13, fontWeight: 600, borderRadius: 10, border: `1px solid ${fAssignee !== 'all' ? 'rgba(1,113,255,.5)' : 'rgba(219,225,234,.5)'}`, background: fAssignee !== 'all' ? '#EEF4FF' : 'transparent', color: fAssignee !== 'all' ? '#a5b4fc' : C.mut, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', fontSize: 13, fontWeight: 600, borderRadius: 10, border: `1px solid ${fAssignee !== 'all' ? 'rgba(1,113,255,.4)' : 'rgba(219,225,234,.5)'}`, background: fAssignee !== 'all' ? '#EEF4FF' : 'transparent', color: fAssignee !== 'all' ? '#a5b4fc' : C.mut, cursor: 'pointer' }}>
             👤 {fAssignee !== 'all' ? 'マイタスク表示中' : 'マイタスク'}
           </button>
           <button onClick={() => setModal('create')}
@@ -827,9 +832,9 @@ function TasksPage() {
       </div>
 
       {/* フィルター */}
-      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, padding: '9px 12px', background: 'rgba(247,247,247,.6)', border: `1px solid ${C.bdr}`, borderRadius: 11 }}>
+      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, padding: '9px 12px', background: rgba(247,247,247,.6)', border: `1px solid ${C.bdr}`, borderRadius: 11 }}>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔍 タイトルで検索..."
-          style={{ flex: 1, minWidth: 140, background: 'rgba(241,245,251,.6)', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: C.txt, outline: 'none' }} />
+          style={{ flex: 1, minWidth: 140, background: 'rgba(0,113,255,.6)', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: C.txt, outline: 'none' }} />
         {[
           { val: fPid,      set: setFPid,      opts: [{ v: 'all', l: '全プロジェクト' }, ...activeProjects.map((p) => ({ v: p.id, l: p.name }))] },
           { val: fStatus,   set: setFStatus,   opts: [{ v: 'all', l: '全ステータス' },  ...Object.entries(STATUS_L).map(([v, l]) => ({ v, l }))] },
@@ -837,7 +842,7 @@ function TasksPage() {
           { val: fAssignee, set: setFAssignee, opts: [{ v: 'all', l: '全担当者' }, { v: 'none', l: '担当者未設定' }, ...users.map((u) => ({ v: u.id, l: u.name }))] },
         ].map((f, i) => (
           <select key={i} value={f.val} onChange={(e) => f.set(e.target.value)}
-            style={{ background: 'rgba(241,245,251,.6)', border: `1px solid rgba(51,65,85,.5)`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#3D424B', cursor: 'pointer', outline: 'none' }}>
+            style={{ background: 'rgba(0,113,255,.6)', border: `1px solid rgba(51,65,85,.5)`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#3D424B', cursor: 'pointer', outline: 'none' }}>
             {f.opts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
           </select>
         ))}
@@ -906,7 +911,7 @@ function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, o
   const RBGS = { danger: 'rgba(69,10,10,.4)', warning: 'rgba(66,32,6,.3)', healthy: 'transparent' };
 
   return (
-    <tr style={{ background: a.snoozed ? 'rgba(241,245,251,.2)' : hov ? 'rgba(241,245,251,.5)' : RBGS[a.risk], borderBottom: `1px solid ${C.bdr}`, opacity: a.snoozed ? 0.55 : 1, transition: 'background .15s' }}
+    <tr style={{ background: a.snoozed ? 'rgba(0,113,255,.2)' : hov ? 'rgba(0,113,255,.5)' : RBGS[a.risk], borderBottom: `1px solid ${C.bdr}`, opacity: a.snoozed ? 0.55 : 1, transition: 'background .15s' }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
       <td style={{ width: 3, padding: 0 }}>
         <div style={{ width: 3, height: 48, background: a.snoozed ? '#DBE1EA' : a.risk === 'danger' ? C.red : a.risk === 'warning' ? C.yel : 'transparent' }} />
@@ -932,19 +937,19 @@ function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, o
       </td>
       <td style={{ padding: '10px 8px' }}>
         <select value={a.status} onChange={(e) => { e.stopPropagation(); onStatus(e.target.value); }} onClick={(e) => e.stopPropagation()}
-          style={{ background: 'rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: STATUS_C[a.status], cursor: 'pointer', outline: 'none' }}>
+          style={{ background: rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: STATUS_C[a.status], cursor: 'pointer', outline: 'none' }}>
           {Object.entries(STATUS_L).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </td>
       <td style={{ padding: '10px 8px' }}>
         <select value={a.pri} onChange={(e) => { e.stopPropagation(); onPriority(e.target.value); }} onClick={(e) => e.stopPropagation()}
-          style={{ background: 'rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: PRI_C[a.pri], cursor: 'pointer', outline: 'none' }}>
+          style={{ background: rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: PRI_C[a.pri], cursor: 'pointer', outline: 'none' }}>
           {Object.entries(PRI_L).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </td>
       <td style={{ padding: '10px 8px' }}>
         <select value={a.uid ?? ''} onChange={(e) => { e.stopPropagation(); onAssignee(e.target.value || null); }} onClick={(e) => e.stopPropagation()}
-          style={{ background: 'rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: a.uid ? C.txt : '#f87171', cursor: 'pointer', outline: 'none' }}>
+          style={{ background: rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: a.uid ? C.txt : '#f87171', cursor: 'pointer', outline: 'none' }}>
           <option value="">未設定</option>
           {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
         </select>
@@ -957,7 +962,7 @@ function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, o
           <div style={{ position: 'relative' }}>
             <SBtn label={a.snoozed ? '解除' : '💤'} c="slate" onClick={() => setSnoozeOpen((v) => !v)} />
             {snoozeOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 50, background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 148, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 50, background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 148, overflow: 'hidden' }}>
                 {(a.snoozed ? [{ l: 'スヌーズ解除', d: null }] : [{ l: '7日間スヌーズ', d: 7 }, { l: '14日間スヌーズ', d: 14 }, { l: '30日間スヌーズ', d: 30 }]).map((o) => (
                   <button key={o.l} onClick={() => { onSnooze(o.d); setSnoozeOpen(false); }}
                     style={{ display: 'block', width: '100%', padding: '8px 12px', fontSize: 11, color: C.txt, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
@@ -1014,8 +1019,8 @@ function TaskModal({ task, projects, users, onSave, onClose }) {
     onSave({ ...form, uid: form.uid || null, title: form.title.trim() });
   };
 
-  const iStyle = { width: '100%', borderRadius: 8, background: 'rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '8px 10px', fontSize: 13, color: C.txt, outline: 'none' };
-  const sStyle = { ...iStyle, cursor: 'pointer', background: 'rgba(247,247,247,.9)' };
+  const iStyle = { width: '100%', borderRadius: 8, background: rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '8px 10px', fontSize: 13, color: C.txt, outline: 'none' };
+  const sStyle = { ...iStyle, cursor: 'pointer', background: rgba(247,247,247,.9)' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '40px 16px 16px', overflowY: 'auto' }}>
@@ -1096,7 +1101,7 @@ function TaskModal({ task, projects, users, onSave, onClose }) {
             </div>
           </div>
           {hints.length > 0 && (
-            <div style={{ borderRadius: 8, background: 'rgba(241,245,251,.6)', border: `1px solid ${C.bdr}`, padding: '10px 12px' }}>
+            <div style={{ borderRadius: 8, background: 'rgba(0,113,255,.6)', border: `1px solid ${C.bdr}`, padding: '10px 12px' }}>
               <p style={{ fontSize: 10, fontWeight: 600, color: C.mut, margin: '0 0 5px' }}>📊 ダッシュボードへの反映イメージ</p>
               {hints.map((h, i) => <p key={i} style={{ fontSize: 11, color: h.c, margin: '2px 0' }}>{h.t} {h.m}</p>)}
             </div>
@@ -1122,9 +1127,9 @@ const PALETTE_L = ['レッド','オレンジ','アンバー','イエロー','グ
 function PForm({ initial, editId: eid, allProjects, onSave, onCancel, isNew }) {
   const [f, setF] = useState(initial);
   const [e, setE] = useState({});
-  const iStyle = { width: '100%', borderRadius: 8, background: 'rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '7px 10px', fontSize: 13, color: C.txt, outline: 'none' };
+  const iStyle = { width: '100%', borderRadius: 8, background: rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '7px 10px', fontSize: 13, color: C.txt, outline: 'none' };
   return (
-    <div style={{ borderRadius: 11, border: `1px solid ${isNew ? 'rgba(99,102,241,.4)' : 'rgba(219,225,234,.5)'}`, background: isNew ? 'rgba(99,102,241,.07)' : 'rgba(241,245,251,.5)', padding: 14, marginBottom: isNew ? 11 : 0 }}>
+    <div style={{ borderRadius: 11, border: `1px solid ${isNew ? 'rgba(99,102,241,.4)' : 'rgba(219,225,234,.5)'}`, background: isNew ? 'rgba(99,102,241,.07)' : 'rgba(0,113,255,.5)', padding: 14, marginBottom: isNew ? 11 : 0 }}>
       {isNew && <p style={{ fontSize: 10, fontWeight: 600, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 9 }}>＋ 新規プロジェクト</p>}
       <div style={{ marginBottom: 10 }}>
         <label style={{ fontSize: 11, fontWeight: 500, color: '#3D424B', display: 'block', marginBottom: 4 }}>プロジェクト名 <span style={{ color: '#f87171' }}>*</span></label>
@@ -1188,7 +1193,7 @@ function ProjectsPage() {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: 'rgba(241,245,251,.6)', border: `1px solid ${C.bdr}`, color: '#3D424B', fontWeight: 500 }}>アクティブ {active.length}件</span>
+          <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: 'rgba(0,113,255,.6)', border: `1px solid ${C.bdr}`, color: '#3D424B', fontWeight: 500 }}>アクティブ {active.length}件</span>
           {archived.length > 0 && (
             <>
               <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: '#F8FAFF', border: `1px solid rgba(51,65,85,.3)`, color: C.mut }}>アーカイブ {archived.length}件</span>
@@ -1199,7 +1204,7 @@ function ProjectsPage() {
           )}
         </div>
         <button onClick={() => { setShowNew(true); setEditId(null); }} disabled={showNew}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 16px', fontSize: 12, fontWeight: 600, borderRadius: 10, border: 'none', background: showNew ? '#FFFFFF' : '#0171ff', color: showNew ? '#64748B' : '#fff', cursor: showNew ? 'not-allowed' : 'pointer', boxShadow: showNew ? 'none' : '0 4px 12px rgba(1,113,255,.35)' }}>
+          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 16px', fontSize: 12, fontWeight: 600, borderRadius: 10, border: 'none', background: showNew ? '#FFFFFF' : '#0171FF', color: showNew ? '#64748B' : '#fff', cursor: showNew ? 'not-allowed' : 'pointer', boxShadow: showNew ? 'none' : '0 4px 12px rgba(1,113,255,.35)' }}>
           ＋ 新規プロジェクト
         </button>
       </div>
@@ -1214,7 +1219,7 @@ function ProjectsPage() {
           onCancel={() => setShowNew(false)} isNew />
       )}
 
-      <div style={{ borderRadius: 13, border: `1px solid ${C.bdr}`, background: 'rgba(247,247,247,.5)', overflow: 'hidden' }}>
+      <div style={{ borderRadius: 13, border: `1px solid ${C.bdr}`, background: rgba(247,247,247,.5)', overflow: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '20px 1fr 65px 1fr 65px 128px', gap: 10, alignItems: 'center', padding: '6px 14px', borderBottom: `1px solid ${C.bdr}`, background: '#F8FAFF', fontSize: 10, fontWeight: 500, color: C.mut }}>
           <span /><span>プロジェクト名</span><span style={{ textAlign: 'center' }}>課題数</span><span>説明</span><span style={{ textAlign: 'center' }}>作成日</span><span style={{ textAlign: 'center' }}>操作</span>
         </div>
@@ -1227,7 +1232,7 @@ function ProjectsPage() {
           <div key={pr.id}>
             {editId !== pr.id ? (
               <div style={{ display: 'grid', gridTemplateColumns: '20px 1fr 65px 1fr 65px 128px', gap: 10, alignItems: 'center', padding: '9px 14px', borderBottom: i < displayed.length - 1 ? `1px solid rgba(219,225,234,.8)` : 'none', opacity: pr.archived ? 0.5 : 1, transition: 'background .15s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(241,245,251,.4)')}
+                onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,113,255,.4)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}>
                 <div style={{ width: 9, height: 9, borderRadius: '50%', background: pr.color }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
@@ -1255,7 +1260,7 @@ function ProjectsPage() {
                 </div>
               </div>
             ) : (
-              <div style={{ padding: '10px 14px', borderBottom: i < displayed.length - 1 ? `1px solid rgba(219,225,234,.8)` : 'none', background: 'rgba(241,245,251,.3)' }}>
+              <div style={{ padding: '10px 14px', borderBottom: i < displayed.length - 1 ? `1px solid rgba(219,225,234,.8)` : 'none', background: 'rgba(0,113,255,.3)' }}>
                 <PForm initial={{ name: pr.name, color: pr.color, desc: pr.desc ?? '' }} editId={pr.id} allProjects={projects}
                   onSave={async (f) => {
                     await updateProject(pr.id, f);
@@ -1269,7 +1274,7 @@ function ProjectsPage() {
         ))}
       </div>
 
-      <div style={{ marginTop: 13, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: 'rgba(247,247,247,.4)', padding: '11px 13px' }}>
+      <div style={{ marginTop: 13, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: rgba(247,247,247,.4)', padding: '11px 13px' }}>
         <p style={{ fontSize: 11, fontWeight: 500, color: C.mut, marginBottom: 5 }}>💡 プロジェクトについて</p>
         {['プロジェクトは課題を集計・可視化するためのグループです', 'アーカイブするとダッシュボードのフィルターに表示されなくなります', '削除すると紐づく課題の所属が「未分類」になります'].map((t) => (
           <p key={t} style={{ fontSize: 11, color: C.dim, marginBottom: 2 }}>• {t}</p>
@@ -1422,7 +1427,7 @@ function SettingsPage() {
           <button onClick={() => { setCfg({ neglect: { w: 4, d: 8 }, deadline: { w: 3, d: 2 }, overload: { maxT: 5, maxD: 2, rate: 40 } }); setNotif({ enabled: true, freq: 'daily' }); setToast({ msg: '初期値に戻しました' }); }} disabled={!hasChanges}
             style={{ padding: '6px 13px', fontSize: 12, borderRadius: 9, border: '1px solid rgba(71,85,105,.6)', color: hasChanges ? '#A2A8B4' : '#DBE1EA', background: 'transparent', cursor: hasChanges ? 'pointer' : 'not-allowed' }}>初期値に戻す</button>
           <button onClick={async () => { setStatus('saving'); await saveConfig(cfg); await new Promise((r) => setTimeout(r, 300)); setSaved({ ...cfg, notif }); setStatus('saved'); setToast({ msg: '設定を保存しました。ダッシュボードに反映されました。' }); setTimeout(() => setStatus('idle'), 2500); }} disabled={!hasChanges || status === 'saving'}
-            style={{ padding: '6px 16px', fontSize: 12, fontWeight: 600, borderRadius: 9, border: 'none', cursor: hasChanges ? 'pointer' : 'not-allowed', background: status === 'saved' ? '#16a34a' : hasChanges ? '#0171ff' : '#FFFFFF', color: (hasChanges || status === 'saved') ? '#fff' : '#DBE1EA' }}>
+            style={{ padding: '6px 16px', fontSize: 12, fontWeight: 600, borderRadius: 9, border: 'none', cursor: hasChanges ? 'pointer' : 'not-allowed', background: status === 'saved' ? '#16a34a' : hasChanges ? '#0171FF' : '#FFFFFF', color: (hasChanges || status === 'saved') ? '#fff' : '#DBE1EA' }}>
             {status === 'saving' ? '保存中…' : status === 'saved' ? '✓ 保存しました' : '設定を保存'}
           </button>
         </div>
@@ -1463,7 +1468,7 @@ function SettingsPage() {
                 <p style={{ fontSize: 11, color: C.mut, margin: '2px 0 0' }}>危険課題が発生したとき自動でアラートを送ります</p>
               </div>
               <div onClick={() => setNotif((n) => ({ ...n, enabled: !n.enabled }))}
-                style={{ width: 42, height: 23, borderRadius: 999, background: notif.enabled ? '#0171ff' : '#DBE1EA', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
+                style={{ width: 42, height: 23, borderRadius: 999, background: notif.enabled ? '#0171FF' : '#DBE1EA', position: 'relative', cursor: 'pointer', transition: 'background .2s', flexShrink: 0 }}>
                 <div style={{ position: 'absolute', top: 2.5, width: 17, height: 17, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,.4)', left: notif.enabled ? 22 : 3, transition: 'left .2s' }} />
               </div>
             </div>
@@ -1474,7 +1479,7 @@ function SettingsPage() {
                   const sel = notif.freq === f.id;
                   return (
                     <div key={f.id} onClick={() => setNotif((n) => ({ ...n, freq: f.id }))}
-                      style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, cursor: 'pointer', border: sel ? '1px solid rgba(96,165,250,.5)' : '1px solid rgba(51,65,85,.4)', background: sel ? 'rgba(96,165,250,.12)' : 'rgba(241,245,251,.35)', transition: 'all .15s' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 11px', borderRadius: 9, cursor: 'pointer', border: sel ? '1px solid rgba(96,165,250,.5)' : '1px solid rgba(51,65,85,.4)', background: sel ? 'rgba(96,165,250,.12)' : 'rgba(0,113,255,.35)', transition: 'all .15s' }}>
                       <div style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${sel ? '#60a5fa' : '#64748B'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {sel && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#60a5fa' }} />}
                       </div>
@@ -1492,7 +1497,7 @@ function SettingsPage() {
 
         {/* プレビューパネル */}
         <div style={{ position: 'sticky', top: 60 }}>
-          <div style={{ borderRadius: 15, border: `1px solid ${C.bdr}`, background: 'linear-gradient(160deg,#EEF4FF,#F0F8FF)', padding: 16 }}>
+          <div style={{ borderRadius: 15, border: '1px solid #B5D4F4', background: 'linear-gradient(140deg,#EEF4FF 0%,#F0F8FF 100%)', padding: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, background: 'rgba(167,139,250,.12)', border: '1px solid rgba(167,139,250,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>👁</div>
@@ -1539,7 +1544,7 @@ function SettingsPage() {
             })()}
             <p style={{ fontSize: 10, color: '#FFFFFF', textAlign: 'center', marginTop: 9 }}>Supabaseデータ {prev.total}件で計算</p>
           </div>
-          <div style={{ marginTop: 11, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: 'rgba(247,247,247,.45)', padding: '11px 13px' }}>
+          <div style={{ marginTop: 11, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: rgba(247,247,247,.45)', padding: '11px 13px' }}>
             <p style={{ fontSize: 11, fontWeight: 500, color: C.mut, margin: '0 0 5px' }}>💡 使い方のヒント</p>
             {['スライダーを動かすと右のプレビューが即座に変わります', '「注意」閾値は「危険」より必ず小さい値になります', '初期値は一般的なチームの標準的な基準です'].map((t) => (
               <p key={t} style={{ fontSize: 11, color: C.dim, margin: '0 0 3px' }}>• {t}</p>
