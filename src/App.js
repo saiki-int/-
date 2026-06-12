@@ -17,17 +17,17 @@ const genId = () => `t${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
 
 // ── 定数 ────────────────────────────────────────────────────────
 const C = {
-  // ── INTLOOPサイト準拠カラー ───────────────────────────────
-  bg:  '#FFFFFF',           // ページ背景（白）
-  sur: '#F7F7F7',           // カード背景（ライトグレー）
-  bdr: '#DBE1EA',           // ボーダー
-  txt: '#3D424B',           // テキスト（チャコール）
-  mut: '#A2A8B4',           // ミュートテキスト
-  dim: '#DBE1EA',           // ディム
-  blu: '#0171FF',           // INTLOOPメインブルー（アクセント）
-  bld: '#0087C6',           // INTLOOPダークブルー
+  // ── INTLOOPブランドカラー ─────────────────────────────────
+  bg:  '#F7F7F7',   // ページ背景（薄グレー）
+  sur: '#FFFFFF',   // カード背景（白）→ 背景と差が出てメリハリ
+  bdr: '#DBE1EA',   // ボーダー
+  txt: '#3D424B',   // テキスト（チャコール）
+  mut: '#A2A8B4',   // ミュートテキスト
+  dim: '#DBE1EA',   // ディム
+  blu: '#0171FF',   // INTLOOPメインブルー
+  bld: '#0087C6',   // INTLOOPダークブルー
   // ── セマンティックカラー ──────────────────────────────────
-  red: '#EF4444', ora: '#F97316', yel: '#F59E0B', grn: '#22C55E',
+  red: '#DC2626', ora: '#EA580C', yel: '#D97706', grn: '#16A34A',
 };
 
 // CFGはContextで管理（設定画面と共有）
@@ -520,7 +520,7 @@ function Dashboard({ setPage }) {
       </div>
 
       {/* フィルター */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '9px 13px', background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 12, marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '9px 13px', background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 12, marginBottom: 14 }}>
         <span style={{ fontSize: 11, color: C.mut }}>プロジェクト：</span>
         {[{ id: 'all', name: '全体', color: C.mut }, ...activeProjects].map((pr) => {
           const sel = selPid === pr.id;
@@ -537,20 +537,20 @@ function Dashboard({ setPage }) {
       {/* KPI */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 14 }}>
         {[
-          { l: '危険課題',        v: `${kpi.danger}${kpi.snoozed > 0 ? ` (💤${kpi.snoozed})` : ''}`, c: '#DC2626', accent: '#DC2626' },
-          { l: '7日以上放置',     v: kpi.neglected,    c: '#EA580C', accent: '#EA580C' },
-          { l: '期限超過',        v: kpi.overdue,      c: '#D97706', accent: '#D97706' },
-          { l: '負荷集中メンバー', v: `${overloaded}人`, c: '#0171FF', accent: '#0171FF' },
+          { l: '危険課題',         v: `${kpi.danger}${kpi.snoozed > 0 ? ` (💤${kpi.snoozed})` : ''}`, c: '#DC2626', accent: '#DC2626', bg: '#FFF5F5' },
+          { l: '7日以上放置',      v: kpi.neglected,    c: '#EA580C', accent: '#EA580C', bg: '#FFF7ED' },
+          { l: '期限超過',         v: kpi.overdue,      c: '#D97706', accent: '#D97706', bg: '#FFFBEB' },
+          { l: '負荷集中メンバー',  v: `${overloaded}人`, c: '#0171FF', accent: '#0171FF', bg: '#EEF4FF' },
         ].map((it) => (
-          <div key={it.l} style={{ borderRadius: 12, padding: '14px 16px', background: '#FFFFFF', border: `1px solid #DBE1EA`, borderTop: `3px solid ${it.accent}`, boxShadow: '0 1px 4px rgba(61,66,75,.08)' }}>
-            <p style={{ fontSize: 11, color: '#A2A8B4', margin: '0 0 6px', fontWeight: 500 }}>{it.l}</p>
-            <p style={{ fontSize: 30, fontWeight: 700, color: it.c, margin: 0, lineHeight: 1 }}>{it.v}</p>
+          <div key={it.l} style={{ borderRadius: 12, padding: '16px 18px', background: it.bg, border: `1px solid ${it.accent}33`, borderLeft: `4px solid ${it.accent}`, boxShadow: '0 2px 8px rgba(61,66,75,.06)' }}>
+            <p style={{ fontSize: 11, color: it.accent, margin: '0 0 8px', fontWeight: 600, letterSpacing: '.04em', textTransform: 'uppercase' }}>{it.l}</p>
+            <p style={{ fontSize: 32, fontWeight: 700, color: it.c, margin: 0, lineHeight: 1 }}>{it.v}</p>
           </div>
         ))}
       </div>
 
       {/* AIサマリー */}
-      <div style={{ borderRadius: 12, border: '1px solid #B5D4F4', borderLeft: '4px solid #0171FF', background: '#FFFFFF', padding: '12px 16px', marginBottom: 14, display: 'flex', gap: 12, boxShadow: '0 1px 4px rgba(1,113,255,.08)' }}>
+      <div style={{ borderRadius: 12, border: '1px solid #B5D4F4', borderLeft: '4px solid #0171FF', background: C.sur, padding: '12px 16px', marginBottom: 14, display: 'flex', gap: 12, boxShadow: '0 1px 4px rgba(1,113,255,.08)' }}>
         <div style={{ width: 34, height: 34, borderRadius: 8, background: '#EEF4FF', border: '1px solid #B5D4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🤖</div>
         <div>
           <p style={{ fontSize: 11, fontWeight: 600, color: '#0171FF', margin: '0 0 4px' }}>AIマネージャーサマリー</p>
@@ -574,7 +574,7 @@ function Dashboard({ setPage }) {
             <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>📌 今日の推奨アクション</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {actions.map((a) => (
-                <div key={a.num} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#FFFFFF', border: '1px solid #DBE1EA' }}>
+                <div key={a.num} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: C.sur, border: '1px solid #DBE1EA' }}>
                   <span style={{ width: 22, height: 22, borderRadius: '50%', background: a.color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>{a.num}</span>
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 600, color: C.txt, margin: 0 }}>{a.title}</p>
@@ -627,7 +627,7 @@ function Dashboard({ setPage }) {
                         {isSnoozed(a) ? '💤 解除' : '💤 スヌーズ'}
                       </button>
                       {snoozeMenu === a.id && (
-                        <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 40, background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 150, overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 40, background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 150, overflow: 'hidden' }}>
                           {(isSnoozed(a) ? [{ l: 'スヌーズ解除', d: null }] : [{ l: '7日間スヌーズ', d: 7 }, { l: '14日間スヌーズ', d: 14 }, { l: '30日間スヌーズ', d: 30 }]).map((o) => (
                             <button key={o.l} onClick={() => { snoozeTask(a.id, o.d); setSnoozeMenu(null); setToast({ msg: o.d ? `${o.d}日間スヌーズしました` : 'スヌーズを解除しました', type: o.d ? 'success' : 'info' }); }}
                               style={{ display: 'block', width: '100%', padding: '8px 12px', fontSize: 11, color: C.txt, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
@@ -703,7 +703,7 @@ function Dashboard({ setPage }) {
           {/* メンバー負荷 */}
           <div>
             <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>メンバー負荷</p>
-            <div style={{ borderRadius: 10, border: `1px solid ${C.bdr}`, background: '#FFFFFF', overflow: 'hidden' }}>
+            <div style={{ borderRadius: 10, border: `1px solid ${C.bdr}`, background: C.sur, overflow: 'hidden' }}>
               {members.map((m, i) => {
                 const stColor = m.status === 'overloaded' ? '#DC2626' : m.status === 'warning' ? '#B45309' : '#86efac';
                 const stLabel = m.status === 'overloaded' ? '負荷集中' : m.status === 'warning' ? '注意' : '健全';
@@ -739,7 +739,7 @@ function Dashboard({ setPage }) {
         return (
           <div style={{ marginBottom: 14 }}>
             <p style={{ fontSize: 11, fontWeight: 600, color: '#A2A8B4', textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>遅延原因の内訳</p>
-            <div style={{ borderRadius: 12, border: `1px solid ${C.bdr}`, background: '#FFFFFF', padding: 14 }}>
+            <div style={{ borderRadius: 12, border: `1px solid ${C.bdr}`, background: C.sur, padding: 14 }}>
               {stats.map(s => (
                 <div key={s.r} style={{ marginBottom: 10 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 4 }}>
@@ -832,9 +832,9 @@ function TasksPage() {
       </div>
 
       {/* フィルター */}
-      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, padding: '9px 12px', background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 11 }}>
+      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 10, padding: '9px 12px', background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 11 }}>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔍 タイトルで検索..."
-          style={{ flex: 1, minWidth: 140, background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: C.txt, outline: 'none' }} />
+          style={{ flex: 1, minWidth: 140, background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: C.txt, outline: 'none' }} />
         {[
           { val: fPid,      set: setFPid,      opts: [{ v: 'all', l: '全プロジェクト' }, ...activeProjects.map((p) => ({ v: p.id, l: p.name }))] },
           { val: fStatus,   set: setFStatus,   opts: [{ v: 'all', l: '全ステータス' },  ...Object.entries(STATUS_L).map(([v, l]) => ({ v, l }))] },
@@ -842,7 +842,7 @@ function TasksPage() {
           { val: fAssignee, set: setFAssignee, opts: [{ v: 'all', l: '全担当者' }, { v: 'none', l: '担当者未設定' }, ...users.map((u) => ({ v: u.id, l: u.name }))] },
         ].map((f, i) => (
           <select key={i} value={f.val} onChange={(e) => f.set(e.target.value)}
-            style={{ background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#3D424B', cursor: 'pointer', outline: 'none' }}>
+            style={{ background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#3D424B', cursor: 'pointer', outline: 'none' }}>
             {f.opts.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
           </select>
         ))}
@@ -962,7 +962,7 @@ function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, o
           <div style={{ position: 'relative' }}>
             <SBtn label={a.snoozed ? '解除' : '💤'} c="slate" onClick={() => setSnoozeOpen((v) => !v)} />
             {snoozeOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 50, background: '#FFFFFF', border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 148, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 4px)', zIndex: 50, background: C.sur, border: `1px solid ${C.bdr}`, borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,.5)', minWidth: 148, overflow: 'hidden' }}>
                 {(a.snoozed ? [{ l: 'スヌーズ解除', d: null }] : [{ l: '7日間スヌーズ', d: 7 }, { l: '14日間スヌーズ', d: 14 }, { l: '30日間スヌーズ', d: 30 }]).map((o) => (
                   <button key={o.l} onClick={() => { onSnooze(o.d); setSnoozeOpen(false); }}
                     style={{ display: 'block', width: '100%', padding: '8px 12px', fontSize: 11, color: C.txt, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
@@ -1101,7 +1101,7 @@ function TaskModal({ task, projects, users, onSave, onClose }) {
             </div>
           </div>
           {hints.length > 0 && (
-            <div style={{ borderRadius: 8, background: '#FFFFFF', border: `1px solid ${C.bdr}`, padding: '10px 12px' }}>
+            <div style={{ borderRadius: 8, background: C.sur, border: `1px solid ${C.bdr}`, padding: '10px 12px' }}>
               <p style={{ fontSize: 10, fontWeight: 600, color: C.mut, margin: '0 0 5px' }}>📊 ダッシュボードへの反映イメージ</p>
               {hints.map((h, i) => <p key={i} style={{ fontSize: 11, color: h.c, margin: '2px 0' }}>{h.t} {h.m}</p>)}
             </div>
@@ -1193,7 +1193,7 @@ function ProjectsPage() {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: '#FFFFFF', border: `1px solid ${C.bdr}`, color: '#3D424B', fontWeight: 500 }}>アクティブ {active.length}件</span>
+          <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: C.sur, border: `1px solid ${C.bdr}`, color: '#3D424B', fontWeight: 500 }}>アクティブ {active.length}件</span>
           {archived.length > 0 && (
             <>
               <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: '#F8FAFF', border: `1px solid rgba(51,65,85,.3)`, color: C.mut }}>アーカイブ {archived.length}件</span>
