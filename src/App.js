@@ -926,19 +926,19 @@ function TaskRow({ a, projects, users, onEdit, onDelete, onStatus, onAssignee, o
       </td>
       <td style={{ padding: '10px 8px' }}>
         <select value={a.status} onChange={(e) => { e.stopPropagation(); onStatus(e.target.value); }} onClick={(e) => e.stopPropagation()}
-          style={{ background: rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: STATUS_C[a.status], cursor: 'pointer', outline: 'none' }}>
+          style={{ background: 'rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: STATUS_C[a.status], cursor: 'pointer', outline: 'none' }}>
           {Object.entries(STATUS_L).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </td>
       <td style={{ padding: '10px 8px' }}>
         <select value={a.pri} onChange={(e) => { e.stopPropagation(); onPriority(e.target.value); }} onClick={(e) => e.stopPropagation()}
-          style={{ background: rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: PRI_C[a.pri], cursor: 'pointer', outline: 'none' }}>
+          style={{ background: 'rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: PRI_C[a.pri], cursor: 'pointer', outline: 'none' }}>
           {Object.entries(PRI_L).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </td>
       <td style={{ padding: '10px 8px' }}>
         <select value={a.uid ?? ''} onChange={(e) => { e.stopPropagation(); onAssignee(e.target.value || null); }} onClick={(e) => e.stopPropagation()}
-          style={{ background: rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: a.uid ? C.txt : '#f87171', cursor: 'pointer', outline: 'none' }}>
+          style={{ background: 'rgba(247,247,247,.8)', border: '1px solid rgba(219,225,234,.8)', borderRadius: 6, padding: '3px 6px', fontSize: 11, color: a.uid ? C.txt : '#f87171', cursor: 'pointer', outline: 'none' }}>
           <option value="">未設定</option>
           {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
         </select>
