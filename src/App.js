@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   useState, useMemo, useCallback, useContext,
@@ -560,7 +559,7 @@ function Dashboard({ setPage }) {
         if (actions.length === 0) return null;
         return (
           <div style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>📌 今日の推奨アクション</p>
+            <p style={{ fontSize: 11, fontWeight: 600, fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px' }}>📌 今日の推奨アクション</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {actions.map((a) => (
                 <div key={a.num} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: C.sur, border: `1px solid ${C.bdr}` }}>
@@ -639,7 +638,7 @@ function Dashboard({ setPage }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {selPid === 'all' ? (
             <div>
-              <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>プロジェクト健康度</p>
+              <p style={{ fontSize: 11, fontWeight: 600, fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px' }}>プロジェクト健康度</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {projHealth.map((ph) => {
                   const st = RSTATUS[ph.status];
@@ -667,7 +666,7 @@ function Dashboard({ setPage }) {
             const st = RSTATUS[ph.status];
             return (
               <div>
-                <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>プロジェクト健康度</p>
+                <p style={{ fontSize: 11, fontWeight: 600, fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px' }}>プロジェクト健康度</p>
                 <div style={{ borderRadius: 10, border: `1px solid ${st.bd}`, background: st.bg, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <div style={{ width: 3, height: 32, borderRadius: 999, background: ph.color, flexShrink: 0 }} />
@@ -691,7 +690,7 @@ function Dashboard({ setPage }) {
 
           {/* メンバー負荷 */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>メンバー負荷</p>
+            <p style={{ fontSize: 11, fontWeight: 600, fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px' }}>メンバー負荷</p>
             <div style={{ borderRadius: 10, border: `1px solid ${C.bdr}`, background: C.sur, overflow: 'hidden' }}>
               {members.map((m, i) => {
                 const stColor = m.status === 'overloaded' ? '#DC2626' : m.status === 'warning' ? '#B45309' : '#86efac';
@@ -727,7 +726,7 @@ function Dashboard({ setPage }) {
         const RCOLORS = { stale: C.yel, overdue: C.red, unassigned: C.ora, highNear: '#f87171', workload: '#0087C6', staleWarn: '#fbbf24', nearDL: '#B45309' };
         return (
           <div style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px', fontSize: 11, fontWeight: 600 }}>遅延原因の内訳</p>
+            <p style={{ fontSize: 11, fontWeight: 600, fontSize: 11, fontWeight: 600, color: C.mut, textTransform: 'uppercase', letterSpacing: '.08em', margin: '0 0 8px' }}>遅延原因の内訳</p>
             <div style={{ borderRadius: 12, border: `1px solid ${C.bdr}`, background: C.sur, padding: 14 }}>
               {stats.map(s => (
                 <div key={s.r} style={{ marginBottom: 10 }}>
@@ -1008,8 +1007,8 @@ function TaskModal({ task, projects, users, onSave, onClose }) {
     onSave({ ...form, uid: form.uid || null, title: form.title.trim() });
   };
 
-  const iStyle = { width: '100%', borderRadius: 8, background: rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '8px 10px', fontSize: 13, color: C.txt, outline: 'none' };
-  const sStyle = { ...iStyle, cursor: 'pointer', background: rgba(247,247,247,.9)' };
+  const iStyle = { width: '100%', borderRadius: 8, background: 'rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '8px 10px', fontSize: 13, color: C.txt, outline: 'none' };
+  const sStyle = { ...iStyle, cursor: 'pointer', background: 'rgba(247,247,247,.9)' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '40px 16px 16px', overflowY: 'auto' }}>
@@ -1116,7 +1115,7 @@ const PALETTE_L = ['レッド','オレンジ','アンバー','イエロー','グ
 function PForm({ initial, editId: eid, allProjects, onSave, onCancel, isNew }) {
   const [f, setF] = useState(initial);
   const [e, setE] = useState({});
-  const iStyle = { width: '100%', borderRadius: 8, background: rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '7px 10px', fontSize: 13, color: C.txt, outline: 'none' };
+  const iStyle = { width: '100%', borderRadius: 8, background: 'rgba(247,247,247,.7)', border: '1px solid rgba(51,65,85,.6)', padding: '7px 10px', fontSize: 13, color: C.txt, outline: 'none' };
   return (
     <div style={{ borderRadius: 11, border: `1px solid ${isNew ? '#B5D4F4' : 'rgba(219,225,234,.5)'}`, background: isNew ? 'rgba(99,102,241,.07)' : 'rgba(0,113,255,.5)', padding: 14, marginBottom: isNew ? 11 : 0 }}>
       {isNew && <p style={{ fontSize: 10, fontWeight: 600, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 9 }}>＋ 新規プロジェクト</p>}
@@ -1208,7 +1207,7 @@ function ProjectsPage() {
           onCancel={() => setShowNew(false)} isNew />
       )}
 
-      <div style={{ borderRadius: 13, border: `1px solid ${C.bdr}`, background: rgba(247,247,247,.5)', overflow: 'hidden' }}>
+      <div style={{ borderRadius: 13, border: `1px solid ${C.bdr}`, background: 'rgba(247,247,247,.5)', overflow: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '20px 1fr 65px 1fr 65px 128px', gap: 10, alignItems: 'center', padding: '6px 14px', borderBottom: `1px solid ${C.bdr}`, background: '#F8FAFF', fontSize: 10, fontWeight: 500, color: C.mut }}>
           <span /><span>プロジェクト名</span><span style={{ textAlign: 'center' }}>課題数</span><span>説明</span><span style={{ textAlign: 'center' }}>作成日</span><span style={{ textAlign: 'center' }}>操作</span>
         </div>
@@ -1263,7 +1262,7 @@ function ProjectsPage() {
         ))}
       </div>
 
-      <div style={{ marginTop: 13, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: rgba(247,247,247,.4)', padding: '11px 13px' }}>
+      <div style={{ marginTop: 13, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: 'rgba(247,247,247,.4)', padding: '11px 13px' }}>
         <p style={{ fontSize: 11, fontWeight: 500, color: C.mut, marginBottom: 5 }}>💡 プロジェクトについて</p>
         {['プロジェクトは課題を集計・可視化するためのグループです', 'アーカイブするとダッシュボードのフィルターに表示されなくなります', '削除すると紐づく課題の所属が「未分類」になります'].map((t) => (
           <p key={t} style={{ fontSize: 11, color: C.dim, marginBottom: 2 }}>• {t}</p>
@@ -1533,7 +1532,7 @@ function SettingsPage() {
             })()}
             <p style={{ fontSize: 10, color: '#FFFFFF', textAlign: 'center', marginTop: 9 }}>Supabaseデータ {prev.total}件で計算</p>
           </div>
-          <div style={{ marginTop: 11, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: rgba(247,247,247,.45)', padding: '11px 13px' }}>
+          <div style={{ marginTop: 11, borderRadius: 11, border: `1px solid rgba(219,225,234,.7)`, background: 'rgba(247,247,247,.45)', padding: '11px 13px' }}>
             <p style={{ fontSize: 11, fontWeight: 500, color: C.mut, margin: '0 0 5px' }}>💡 使い方のヒント</p>
             {['スライダーを動かすと右のプレビューが即座に変わります', '「注意」閾値は「危険」より必ず小さい値になります', '初期値は一般的なチームの標準的な基準です'].map((t) => (
               <p key={t} style={{ fontSize: 11, color: C.dim, margin: '0 0 3px' }}>• {t}</p>
